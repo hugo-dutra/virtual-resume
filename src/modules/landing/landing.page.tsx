@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { motion } from 'framer-motion'
 import { Button } from '../../shared/ui/button'
@@ -26,10 +26,19 @@ const motionItem = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
 }
 
+const HERO_PHOTO_CANDIDATES = [
+  '/assets/profile/hero-photo.avif',
+  '/assets/profile/hero-photo.webp',
+  '/assets/profile/hero-photo.jpg',
+  '/assets/profile/hero-photo.png',
+] as const
+
 export function LandingPage() {
   useAppMode('landing')
 
   const heroRef = useRef<HTMLElement | null>(null)
+  const [photoIndex, setPhotoIndex] = useState(0)
+  const [hasPhoto, setHasPhoto] = useState(true)
   const audioEnabled = useAppStore((state) => state.audioEnabled)
   const toggleAudio = useAppStore((state) => state.toggleAudio)
 
@@ -62,6 +71,18 @@ export function LandingPage() {
     return () => ctx.revert()
   }, [])
 
+  const handlePhotoError = () => {
+    setPhotoIndex((currentIndex) => {
+      const nextIndex = currentIndex + 1
+      if (nextIndex >= HERO_PHOTO_CANDIDATES.length) {
+        setHasPhoto(false)
+        return currentIndex
+      }
+
+      return nextIndex
+    })
+  }
+
   return (
     <main className="relative isolate mx-auto flex min-h-screen w-full max-w-6xl items-center px-6 py-16 sm:py-20">
       <div
@@ -77,6 +98,31 @@ export function LandingPage() {
         variants={motionContainer}
       >
         <div className="space-y-6">
+          <motion.div className="w-fit" variants={motionItem}>
+            <div className="relative h-44 w-44 overflow-hidden rounded-2xl border border-sky-300/70 bg-slate-100/85 shadow-lg dark:border-sky-700/70 dark:bg-slate-900/75">
+              {hasPhoto ? (
+                <img
+                  alt="Profile photo"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={HERO_PHOTO_CANDIDATES[photoIndex]}
+                  onError={handlePhotoError}
+                />
+              ) : null}
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-200/40 via-cyan-100/20 to-blue-200/40 dark:from-sky-800/30 dark:via-cyan-900/20 dark:to-blue-900/25" />
+              <div className="absolute inset-3 rounded-xl border border-dashed border-sky-400/70 dark:border-sky-500/60" />
+              {!hasPhoto ? (
+                <>
+                  <p className="absolute left-4 top-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
+                    Photo Space
+                  </p>
+                  <p className="absolute bottom-4 left-4 max-w-[8.75rem] text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                    Add a hero photo in /public/assets/profile.
+                  </p>
+                </>
+              ) : null}
+            </div>
+          </motion.div>
+
           <motion.p
             data-gsap-badge
             className="inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:border-sky-700 dark:bg-sky-900/40 dark:text-sky-200"
@@ -88,14 +134,22 @@ export function LandingPage() {
           <motion.div variants={motionItem}>
             <SectionTitle
               title="Choose your navigation mode"
-              subtitle="Now with entrance animation, adventure visual preview, and a structure ready to evolve into the full 3D map."
+              subtitle="Explore the same resume in two different experiences, depending on your reading style."
             />
           </motion.div>
 
-          <motion.p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base" variants={motionItem}>
-            Traditional mode prioritizes fast reading for recruiters. Adventure mode creates a memorable interactive
-            journey with storytelling around your professional experience.
-          </motion.p>
+          <motion.div className="max-w-xl space-y-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base" variants={motionItem}>
+            <p>
+              This is an interactive virtual resume where you can choose between two navigation modes:
+            </p>
+            <p>
+              <strong>Traditional</strong> - fast and objective reading, ideal for recruiters.
+            </p>
+            <p>
+              <strong>Fun (Adventure)</strong> - an interactive 3D map with storytelling and a gamified visualization
+              of your professional journey.
+            </p>
+          </motion.div>
 
           <motion.div className="flex flex-wrap gap-3" variants={motionItem}>
             <Button variant={audioEnabled ? 'secondary' : 'ghost'} onClick={toggleAudio}>
