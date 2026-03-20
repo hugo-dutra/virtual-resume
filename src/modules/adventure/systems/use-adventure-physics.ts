@@ -5,7 +5,7 @@ import { MAP_SIZE, PLAYER_RADIUS } from '../world/world.constants'
 const HALF_MAP_SIZE = MAP_SIZE / 2
 const WALL_HEIGHT = 2
 const WALL_THICKNESS = 0.6
-const PLAYER_START_Z = Math.min(HALF_MAP_SIZE - 6, 16)
+const PLAYER_START_Z = HALF_MAP_SIZE - 8
 
 type UseAdventurePhysicsResult = {
   world: CANNON.World

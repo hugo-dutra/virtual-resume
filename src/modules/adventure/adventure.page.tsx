@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { buildingsData } from '../../data/buildings'
 import type { Building } from '../../data/buildings.schema'
@@ -15,6 +15,33 @@ import type { PlayerPosition } from './engine/adventure-scene'
 import { useAdventureAudio } from './hooks/use-adventure-audio'
 import { AdventureHud } from './ui/adventure-hud'
 import { AdventureLoadingOverlay } from './ui/adventure-loading-overlay'
+import { PLAYER_RADIUS } from './world/world.constants'
+
+const PROXIMITY_AUTO_OPEN_DISTANCE = 1
+const PROXIMITY_AUTO_CLOSE_DISTANCE = 1.2
+
+function getPlayerToBoxDistance(
+  position: PlayerPosition,
+  box: {
+    position: {
+      x: number
+      z: number
+    }
+    size: {
+      x: number
+      z: number
+    }
+  },
+) {
+  const halfWidth = box.size.x / 2
+  const halfDepth = box.size.z / 2
+  const deltaX = Math.max(Math.abs(position.x - box.position.x) - halfWidth, 0)
+  const deltaZ = Math.max(Math.abs(position.z - box.position.z) - halfDepth, 0)
+  const centerToBuildingDistance = Math.hypot(deltaX, deltaZ)
+
+  // Convert center-to-shape distance into surface-to-surface distance in meters.
+  return Math.max(centerToBuildingDistance - PLAYER_RADIUS, 0)
+}
 
 export function AdventurePage() {
   useAppMode('adventure')
@@ -40,6 +67,19 @@ export function AdventurePage() {
   )
 
   const selectedEducationPlace = educationPlacesData.places.find((place) => place.id === selectedEducationPlaceId)
+  const allBuildings = useMemo(() => buildingsData.buildings, [])
+  const allEducationPlaces = useMemo(() => educationPlacesData.places, [])
+  const activeExperienceIdRef = useRef(activeExperienceId)
+  const selectedEducationPlaceIdRef = useRef(selectedEducationPlaceId)
+  const selectedBuildingRef = useRef<Building | undefined>(selectedBuilding)
+  const selectedEducationPlaceRef = useRef<EducationPlace | undefined>(selectedEducationPlace)
+
+  useEffect(() => {
+    activeExperienceIdRef.current = activeExperienceId
+    selectedEducationPlaceIdRef.current = selectedEducationPlaceId
+    selectedBuildingRef.current = selectedBuilding
+    selectedEducationPlaceRef.current = selectedEducationPlace
+  }, [activeExperienceId, selectedBuilding, selectedEducationPlace, selectedEducationPlaceId])
 
   const handleBuildingSelect = useCallback(
     (building: Building) => {
@@ -80,14 +120,107 @@ export function AdventurePage() {
     setHoveredBuildingId(null)
   }, [handleCloseModal, setHoveredBuildingId])
 
-  const handlePlayerPositionChange = useCallback((position: PlayerPosition) => {
-    setPlayerPosition((previousPosition) => {
-      const hasMovedEnough =
-        Math.abs(previousPosition.x - position.x) > 0.02 || Math.abs(previousPosition.z - position.z) > 0.02
+  const handlePlayerPositionChange = useCallback(
+    (position: PlayerPosition) => {
+      setPlayerPosition((previousPosition) => {
+        const hasMovedEnough =
+          Math.abs(previousPosition.x - position.x) > 0.02 || Math.abs(previousPosition.z - position.z) > 0.02
 
-      return hasMovedEnough ? position : previousPosition
-    })
-  }, [])
+        return hasMovedEnough ? position : previousPosition
+      })
+
+      let nearestBuilding: Building | null = null
+      let nearestBuildingDistance = Number.POSITIVE_INFINITY
+
+      for (const building of allBuildings) {
+        const distance = getPlayerToBoxDistance(position, building)
+        if (distance < nearestBuildingDistance) {
+          nearestBuildingDistance = distance
+          nearestBuilding = building
+        }
+      }
+
+      let nearestEducationPlace: EducationPlace | null = null
+      let nearestEducationDistance = Number.POSITIVE_INFINITY
+
+      for (const place of allEducationPlaces) {
+        const distance = getPlayerToBoxDistance(position, place)
+        if (distance < nearestEducationDistance) {
+          nearestEducationDistance = distance
+          nearestEducationPlace = place
+        }
+      }
+
+      const currentActiveExperienceId = activeExperienceIdRef.current
+      const currentSelectedEducationPlaceId = selectedEducationPlaceIdRef.current
+      const currentSelectedBuilding = selectedBuildingRef.current
+      const currentSelectedEducationPlace = selectedEducationPlaceRef.current
+
+      const shouldOpenNearestBuilding =
+        nearestBuilding !== null &&
+        nearestBuildingDistance <= PROXIMITY_AUTO_OPEN_DISTANCE &&
+        nearestBuildingDistance <= nearestEducationDistance
+
+      if (shouldOpenNearestBuilding && nearestBuilding) {
+        if (
+          currentActiveExperienceId !== nearestBuilding.experienceId ||
+          currentSelectedEducationPlaceId !== null
+        ) {
+          activeExperienceIdRef.current = nearestBuilding.experienceId
+          selectedEducationPlaceIdRef.current = null
+          selectedBuildingRef.current = nearestBuilding
+          selectedEducationPlaceRef.current = undefined
+          handleBuildingSelect(nearestBuilding)
+        }
+        return
+      }
+
+      const shouldOpenNearestEducation =
+        nearestEducationPlace !== null &&
+        nearestEducationDistance <= PROXIMITY_AUTO_OPEN_DISTANCE &&
+        nearestEducationDistance < nearestBuildingDistance
+
+      if (shouldOpenNearestEducation && nearestEducationPlace) {
+        if (
+          currentSelectedEducationPlaceId !== nearestEducationPlace.id ||
+          currentActiveExperienceId !== null
+        ) {
+          activeExperienceIdRef.current = null
+          selectedEducationPlaceIdRef.current = nearestEducationPlace.id
+          selectedBuildingRef.current = undefined
+          selectedEducationPlaceRef.current = nearestEducationPlace
+          handleEducationSelect(nearestEducationPlace)
+        }
+        return
+      }
+
+      if (currentSelectedBuilding) {
+        const distanceToSelectedBuilding = getPlayerToBoxDistance(position, currentSelectedBuilding)
+        if (distanceToSelectedBuilding > PROXIMITY_AUTO_CLOSE_DISTANCE) {
+          activeExperienceIdRef.current = null
+          selectedEducationPlaceIdRef.current = null
+          selectedBuildingRef.current = undefined
+          selectedEducationPlaceRef.current = undefined
+          handleCloseModal()
+          setHoveredBuildingId(null)
+        }
+        return
+      }
+
+      if (currentSelectedEducationPlace) {
+        const distanceToSelectedEducation = getPlayerToBoxDistance(position, currentSelectedEducationPlace)
+        if (distanceToSelectedEducation > PROXIMITY_AUTO_CLOSE_DISTANCE) {
+          activeExperienceIdRef.current = null
+          selectedEducationPlaceIdRef.current = null
+          selectedBuildingRef.current = undefined
+          selectedEducationPlaceRef.current = undefined
+          handleCloseModal()
+          setHoveredBuildingId(null)
+        }
+      }
+    },
+    [allBuildings, allEducationPlaces, handleBuildingSelect, handleCloseModal, handleEducationSelect, setHoveredBuildingId],
+  )
 
   const handleActiveBuildingCountChange = useCallback(() => {
     // Intentionally no-op: minimap is visual only without textual counters.
