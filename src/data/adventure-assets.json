@@ -55,7 +55,20 @@
       "relationId": "etb",
       "title": "ETB Landmark Model",
       "description": "Represents ETB as part of the education journey in the map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 20.0,
+          "y": 20.0,
+          "z": 20.0
+        },
+        "offset": {
+          "x": -6,
+          "y": 0,
+          "z": 0
+        },
+        "rotationY": 0
+      }
     },
     {
       "assetId": "education-ucb",

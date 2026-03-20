@@ -355,50 +355,52 @@ export function AdventurePage() {
         </div>
       </header>
 
-      <Card className="overflow-hidden p-0">
-        <div className="relative h-[68vh] min-h-[500px] w-full bg-slate-950">
-          <AdventureLoadingOverlay />
-          <AdventureCanvas
-            hoveredBuildingId={hoveredBuildingId}
-            selectedBuildingId={selectedBuilding?.id ?? null}
-            selectedEducationPlaceId={selectedEducationPlace?.id ?? null}
-            onBuildingSelect={handleBuildingSelect}
-            onEducationSelect={handleEducationSelect}
-            onEmptySelect={handleEmptySelect}
-            onHoveredBuildingChange={setHoveredBuildingId}
-            onActiveBuildingCountChange={handleActiveBuildingCountChange}
-            onPlayerPositionChange={handlePlayerPositionChange}
-          />
-          <AdventureHud
-            hoveredBuildingId={hoveredBuildingId}
-            selectedBuildingId={selectedBuilding?.id ?? null}
-            selectedEducationPlaceId={selectedEducationPlace?.id ?? null}
-            playerPosition={playerPosition}
-            buildings={buildingsData.buildings}
-            educationPlaces={educationPlacesData.places}
-            onEducationMarkerSelect={handleEducationMarkerSelect}
-          />
-        </div>
-      </Card>
+      <section className="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <Card className="h-fit lg:sticky lg:top-6">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Welcome to Career Quest</h2>
+          <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+            <p>
+              This interactive map is a playful way to explore my professional and academic journey. Walk around, find
+              landmarks, and get close to reveal each story.
+            </p>
+            <p>
+              Use <strong>WASD</strong> (or arrow keys) to move, hold <strong>Shift</strong> to sprint, and use the
+              <strong> mouse scroll</strong> to zoom the camera from close view to far overview.
+            </p>
+            <p>
+              <strong>How proximity works:</strong> info panels open automatically when you get close and close
+              automatically when you move away. If you dismiss a panel while near a place (click outside or press
+              <strong> Esc</strong>), it stays closed until you approach that place again.
+            </p>
+          </div>
+        </Card>
 
-      <Card>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Welcome to Career Quest</h2>
-        <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-          <p>
-            This interactive map is a playful way to explore my professional and academic journey. Walk around, find
-            landmarks, and get close to reveal each story.
-          </p>
-          <p>
-            Use <strong>WASD</strong> (or arrow keys) to move, hold <strong>Shift</strong> to sprint, and use the
-            <strong> mouse scroll</strong> to zoom the camera from close view to far overview.
-          </p>
-          <p>
-            <strong>How proximity works:</strong> info panels open automatically when you get close and close
-            automatically when you move away. If you dismiss a panel while near a place (click outside or press
-            <strong> Esc</strong>), it stays closed until you approach that place again.
-          </p>
-        </div>
-      </Card>
+        <Card className="overflow-hidden p-0">
+          <div className="relative h-[68vh] min-h-[500px] w-full bg-slate-950">
+            <AdventureLoadingOverlay />
+            <AdventureCanvas
+              hoveredBuildingId={hoveredBuildingId}
+              selectedBuildingId={selectedBuilding?.id ?? null}
+              selectedEducationPlaceId={selectedEducationPlace?.id ?? null}
+              onBuildingSelect={handleBuildingSelect}
+              onEducationSelect={handleEducationSelect}
+              onEmptySelect={handleEmptySelect}
+              onHoveredBuildingChange={setHoveredBuildingId}
+              onActiveBuildingCountChange={handleActiveBuildingCountChange}
+              onPlayerPositionChange={handlePlayerPositionChange}
+            />
+            <AdventureHud
+              hoveredBuildingId={hoveredBuildingId}
+              selectedBuildingId={selectedBuilding?.id ?? null}
+              selectedEducationPlaceId={selectedEducationPlace?.id ?? null}
+              playerPosition={playerPosition}
+              buildings={buildingsData.buildings}
+              educationPlaces={educationPlacesData.places}
+              onEducationMarkerSelect={handleEducationMarkerSelect}
+            />
+          </div>
+        </Card>
+      </section>
 
       <Modal
         isOpen={Boolean(selectedExperience || selectedEducationPlace)}
