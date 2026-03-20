@@ -42,15 +42,21 @@ export function ResumeHeaderSection({ person, onToggleTheme, onPrint, themeLabel
             {person.contact.email}
           </a>
           <span>{person.contact.phone}</span>
-          <a className="hover:underline" href={person.contact.website} rel="noreferrer" target="_blank">
-            {person.contact.website}
-          </a>
-          <a className="hover:underline" href={person.contact.linkedin} rel="noreferrer" target="_blank">
-            LinkedIn
-          </a>
-          <a className="hover:underline" href={person.contact.github} rel="noreferrer" target="_blank">
-            GitHub
-          </a>
+          {person.contact.website ? (
+            <a className="hover:underline" href={person.contact.website} rel="noreferrer" target="_blank">
+              {person.contact.website}
+            </a>
+          ) : null}
+          {person.contact.linkedin ? (
+            <a className="hover:underline" href={person.contact.linkedin} rel="noreferrer" target="_blank">
+              LinkedIn
+            </a>
+          ) : null}
+          {person.contact.github ? (
+            <a className="hover:underline" href={person.contact.github} rel="noreferrer" target="_blank">
+              GitHub
+            </a>
+          ) : null}
         </div>
       </Card>
     </section>

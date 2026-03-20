@@ -3,9 +3,9 @@ import { z } from 'zod'
 export const contactSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(1),
-  website: z.string().url(),
-  linkedin: z.string().url(),
-  github: z.string().url(),
+  website: z.string().url().optional(),
+  linkedin: z.string().url().optional(),
+  github: z.string().url().optional(),
 })
 
 export const personSchema = z.object({

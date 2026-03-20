@@ -2,42 +2,85 @@
   "updatedAt": "2026-03-20",
   "experiences": [
     {
-      "id": "empresa-alpha",
-      "company": "Empresa Alpha",
-      "role": "Senior Frontend Developer",
-      "period": "Jan 2020 - Dez 2022",
-      "location": "Sao Paulo, BR",
-      "summary": "Lideranca tecnica em redesign de plataforma web com foco em performance e UX.",
-      "tech": ["React", "TypeScript", "AWS", "Node.js"],
+      "id": "foton-informatica",
+      "company": "Foton Informatica",
+      "role": "Developer Analyst (Java Backend at Sicoob)",
+      "period": "2025 - Present",
+      "location": "Brazil",
+      "summary": "Java backend work focused on foreign exchange integrations, with EJB/JAX-RS services and REST APIs in JSON/XML.",
+      "tech": ["Java", "EJB", "JAX-RS", "REST", "Swagger/OpenAPI", "JUnit", "Mockito", "Jenkins", "GitLab"],
       "highlights": [
-        "Reducao de 40% no tempo medio de carregamento",
-        "Mentoria tecnica para time de 5 desenvolvedores"
+        "Standardized service contracts and produced technical documentation with Swagger/OpenAPI",
+        "Executed unit tests, code reviews and staging deployments through CI/CD pipelines",
+        "Worked on environment configuration, troubleshooting and monitoring during releases"
       ]
     },
     {
-      "id": "startup-beta",
-      "company": "Startup Beta",
-      "role": "Frontend Engineer",
-      "period": "Fev 2018 - Dez 2019",
-      "location": "Remoto",
-      "summary": "Construcao de interface de produto SaaS em ambiente de alta iteracao.",
-      "tech": ["Vue", "TypeScript", "GraphQL"],
+      "id": "ilia",
+      "company": "Ilia",
+      "role": "Senior Full Stack Engineer",
+      "period": "2022 - 2025",
+      "location": "Brazil",
+      "summary": "Development of microservices and microfrontends for a marketplace platform, from planning to production support.",
+      "tech": ["NestJS", "Node.js", "Java Spring Boot", "React", "Storybook", "PostgreSQL", "MongoDB", "SonarQube", "Grafana", "Prometheus", "Dynatrace"],
       "highlights": [
-        "Implementacao de design system reutilizavel",
-        "Aumento de 22% na conversao da trial"
+        "Delivered microservices and microfrontends with full CI/CD on Jenkins/GitLab",
+        "Implemented unit and integration testing strategy across projects",
+        "Acted as technical reference for knowledge sharing and delivery best practices"
       ]
     },
     {
-      "id": "consultoria-gamma",
-      "company": "Consultoria Gamma",
-      "role": "Full Stack Developer",
-      "period": "Jun 2015 - Jan 2018",
-      "location": "Campinas, BR",
-      "summary": "Entrega de projetos web corporativos ponta a ponta para diferentes setores.",
-      "tech": ["React", "Node.js", "PostgreSQL"],
+      "id": "seedf",
+      "company": "Secretariat of State for Education of the Federal District",
+      "role": "Senior Full Stack Engineer",
+      "period": "2019 - 2022",
+      "location": "Brasilia - DF - Brazil",
+      "summary": "Built and modernized applications for management of civil servants, temporary staff and teachers.",
+      "tech": ["React", "React Native", "Node.js", "NestJS", "Angular", "Ionic", "Java", "Spring", "Prometheus", "Grafana", "NetData"],
       "highlights": [
-        "Entrega de 12 projetos sem atraso critico",
-        "Padronizacao de pipeline de deploy para clientes"
+        "Developed web and mobile applications used by public education operations",
+        "Migrated monolithic modules to React and Node.js services",
+        "Served as technical reference for feasibility analysis and solution design"
+      ]
+    },
+    {
+      "id": "infinity",
+      "company": "Infinity",
+      "role": "Full Stack Pleno Engineer",
+      "period": "2018 - 2019",
+      "location": "Brazil",
+      "summary": "Built healthcare and sales systems with React frontend and Java backend APIs.",
+      "tech": ["React", "Java", "Spring Boot", "PostgreSQL", "Swagger/OpenAPI", "Firebird", "JasperReports"],
+      "highlights": [
+        "Implemented telehealth system architecture with authN/authZ and reusable components",
+        "Designed and exposed REST APIs for partner clinic operations",
+        "Led migration of legacy sales and commissions system from Delphi to Java services"
+      ]
+    },
+    {
+      "id": "physics-teacher-seedf",
+      "company": "Secretariat of Education of the Federal District",
+      "role": "Physics Teacher",
+      "period": "2010 - 2018",
+      "location": "Brasilia - DF - Brazil",
+      "summary": "Classroom teaching and pedagogical activities in public education.",
+      "tech": ["Physics", "Education", "Curriculum Planning"],
+      "highlights": [
+        "Delivered classes and educational planning for secondary education",
+        "Supported student development with structured learning approaches"
+      ]
+    },
+    {
+      "id": "autotrac",
+      "company": "Autotrac Comercio e Telecom",
+      "role": "Junior C# Developer",
+      "period": "2008 - 2010",
+      "location": "Brazil",
+      "summary": "Development of desktop and service applications for encryption and server monitoring.",
+      "tech": ["C#", "Windows Service", "Desktop Applications"],
+      "highlights": [
+        "Created file encryption service using hardware-based key repository",
+        "Built monitoring application for customizable charts, alerts and server metrics"
       ]
     }
   ]

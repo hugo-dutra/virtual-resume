@@ -1,62 +1,71 @@
 {
   "updatedAt": "2026-03-20",
   "person": {
-    "name": "Seu Nome",
-    "title": "Senior Frontend Engineer",
-    "location": "Sao Paulo, BR",
-    "summary": "Engenheiro de software com foco em produtos web de alta qualidade, performance e experiencia de usuario. Atuacao com lideranca tecnica, arquitetura frontend e colaboracao entre times de produto.",
-    "avatarAlt": "Foto profissional",
+    "name": "Hugo Alves Dutra",
+    "title": "Software Engineer",
+    "location": "Brasilia - DF - Brazil",
+    "summary": "Full-stack developer with over 15 years of experience building scalable web and mobile applications. Strong background in JavaScript and TypeScript, with hands-on work in microservices, BFF, distributed systems, CQRS architectures, and modernization of legacy platforms.",
+    "avatarAlt": "Hugo Alves Dutra",
     "contact": {
-      "email": "contato@seudominio.com",
-      "phone": "+55 11 99999-9999",
-      "website": "https://seudominio.com",
-      "linkedin": "https://www.linkedin.com/in/seu-perfil",
-      "github": "https://github.com/seu-usuario"
+      "email": "hugo.dutra@hotmail.com",
+      "phone": "+55 61 982086449",
+      "github": "https://github.com/hugo-dutra"
     }
   },
   "skills": [
     {
+      "category": "Main Languages",
+      "items": ["JavaScript", "TypeScript", "Java", "C#"]
+    },
+    {
+      "category": "Backend",
+      "items": ["Node.js", "NestJS", "Java Spring Boot", "EJB", "JAX-RS"]
+    },
+    {
       "category": "Frontend",
-      "items": ["React", "TypeScript", "Next.js", "Tailwind CSS", "Framer Motion"]
+      "items": ["React", "Angular"]
     },
     {
-      "category": "Backend e Dados",
-      "items": ["Node.js", "REST APIs", "GraphQL", "PostgreSQL", "Redis"]
+      "category": "Mobile",
+      "items": ["Ionic", "React Native", "Xamarin"]
     },
     {
-      "category": "Cloud e Qualidade",
-      "items": ["AWS", "Docker", "CI/CD", "Vitest", "Playwright"]
+      "category": "Databases",
+      "items": ["PostgreSQL", "Oracle", "MySQL", "SQLite", "Firebird", "MongoDB", "Firebase", "Redis"]
+    },
+    {
+      "category": "Cloud, Infra and Observability",
+      "items": ["Digital Ocean", "Google Cloud Platform", "Docker", "Kubernetes", "Istio", "Dynatrace", "Grafana", "NetData"]
+    },
+    {
+      "category": "Testing and Delivery",
+      "items": ["Jest", "Supertest", "React Testing Library", "JUnit", "Mockito", "GitHub Actions", "Jenkins", "Bitbucket Pipeline", "SonarQube"]
+    },
+    {
+      "category": "Software Design",
+      "items": ["SOLID", "Clean Architecture", "Design Patterns", "DDD", "Microservices", "Scrum", "Kanban", "Jira"]
     }
   ],
   "education": [
     {
-      "institution": "Universidade Exemplo",
-      "degree": "Bacharelado em Ciencia da Computacao",
-      "period": "2011 - 2015",
-      "details": "Base forte em algoritmos, estruturas de dados e engenharia de software."
-    },
-    {
-      "institution": "Especializacao Exemplo",
-      "degree": "Pos-graduacao em Arquitetura de Software",
-      "period": "2017 - 2018",
-      "details": "Foco em arquitetura distribuida, observabilidade e escalabilidade."
+      "institution": "Catholic University of Brasilia (UCB)",
+      "degree": "Full Teaching Degree in Physics",
+      "period": "2002 - 2007",
+      "details": "Final graduation project: 3D simulator of carbon nanotubes developed with Delphi and OpenGL."
     }
   ],
   "projects": [
     {
-      "id": "plataforma-x",
-      "name": "Plataforma X",
-      "summary": "Portal web para operacoes internas com dashboards em tempo real e fluxos criticos de negocio.",
-      "tech": ["React", "TypeScript", "Node.js", "AWS"],
-      "link": "https://seudominio.com/projetos/plataforma-x",
-      "repo": "https://github.com/seu-usuario/plataforma-x"
+      "id": "ai-customer-service",
+      "name": "AI Customer Service API",
+      "summary": "API for WhatsApp and web widgets for support bots using NestJS and LangChain, with RAG support, embeddings for PDFs/texts, synthetic data generation, and integration with OpenAI tools.",
+      "tech": ["NestJS", "LangChain", "OpenAI", "Redis", "MongoDB", "PostgreSQL", "PGVector"]
     },
     {
-      "id": "app-y",
-      "name": "App Y",
-      "summary": "Aplicacao B2B com onboarding guiado e modulos de automacao para equipes comerciais.",
-      "tech": ["Next.js", "GraphQL", "PostgreSQL"],
-      "link": "https://seudominio.com/projetos/app-y"
+      "id": "ai-ticket-creation",
+      "name": "AI-Based Ticket Creation Workflow",
+      "summary": "Automated support workflow integrating n8n, GLPI and WhatsApp for ticket create/query/update and knowledge-base retrieval with contextual responses.",
+      "tech": ["n8n", "GLPI", "WhatsApp", "MCP", "MongoDB", "Redis", "Docker"]
     }
   ]
 }
