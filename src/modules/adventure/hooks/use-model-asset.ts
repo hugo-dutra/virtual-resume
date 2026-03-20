@@ -6,8 +6,13 @@ import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.j
 
 type ModelLoadStatus = 'idle' | 'loading' | 'ready' | 'error'
 
-const modelTemplateCache = new Map<string, Group | null>()
-const modelLoadPromises = new Map<string, Promise<Group | null>>()
+type ModelTemplate = {
+  scene: Group
+  animations: THREE.AnimationClip[]
+}
+
+const modelTemplateCache = new Map<string, ModelTemplate | null>()
+const modelLoadPromises = new Map<string, Promise<ModelTemplate | null>>()
 
 function cloneModelScene(scene: Group) {
   return cloneSkeleton(scene) as Group
@@ -22,7 +27,7 @@ function prepareModelScene(scene: Group) {
   })
 }
 
-function loadModelTemplate(url: string): Promise<Group | null> {
+function loadModelTemplate(url: string): Promise<ModelTemplate | null> {
   const cachedTemplate = modelTemplateCache.get(url)
   if (cachedTemplate !== undefined) {
     return Promise.resolve(cachedTemplate)
@@ -33,16 +38,22 @@ function loadModelTemplate(url: string): Promise<Group | null> {
     return pendingLoad
   }
 
-  const promise = new Promise<Group | null>((resolve) => {
+  const promise = new Promise<ModelTemplate | null>((resolve) => {
     const loader = new GLTFLoader()
 
     loader.load(
       url,
       (gltf) => {
         prepareModelScene(gltf.scene)
-        modelTemplateCache.set(url, gltf.scene)
+        modelTemplateCache.set(url, {
+          scene: gltf.scene,
+          animations: gltf.animations,
+        })
         modelLoadPromises.delete(url)
-        resolve(gltf.scene)
+        resolve({
+          scene: gltf.scene,
+          animations: gltf.animations,
+        })
       },
       undefined,
       () => {
@@ -59,6 +70,7 @@ function loadModelTemplate(url: string): Promise<Group | null> {
 
 type UseModelAssetResult = {
   scene: Group | null
+  animations: THREE.AnimationClip[]
   status: ModelLoadStatus
 }
 
@@ -90,15 +102,16 @@ export function useModelAsset(url: string | null): UseModelAssetResult {
   }, [url])
 
   const template = url ? modelTemplateCache.get(url) : undefined
+  const animations = useMemo(() => template?.animations ?? [], [template])
   const scene = useMemo(() => {
-    if (!template) {
+    if (!template?.scene) {
       return null
     }
 
-    return cloneModelScene(template)
+    return cloneModelScene(template.scene)
   }, [template])
 
   const status: ModelLoadStatus = !url ? 'idle' : template === null ? 'error' : template ? 'ready' : 'loading'
 
-  return { scene, status }
+  return { scene, animations, status }
 }

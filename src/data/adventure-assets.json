@@ -79,7 +79,24 @@
       "relationId": "hugo-alves-dutra",
       "title": "Player Avatar Model",
       "description": "Represents the player avatar in the adventure mode.",
-      "format": "glb"
+      "format": "glb",
+      "animations": {
+        "idle": "Idle.fbx",
+        "run": "Run.fbx"
+      },
+      "transform": {
+        "scale": {
+          "x": 3.0,
+          "y": 3.0,
+          "z": 3.0
+        },
+        "offset": {
+          "x": 0,
+          "y": 2.0,
+          "z": 0
+        },
+        "rotationY": 0
+      }
     }
   ]
 }

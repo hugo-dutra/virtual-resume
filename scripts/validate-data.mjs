@@ -102,6 +102,13 @@ const adventureAssetsDocumentSchema = z.object({
         title: z.string().min(1),
         description: z.string().min(1),
         format: z.enum(['glb', 'gltf']).default('glb'),
+        animations: z
+          .object({
+            idle: z.string().regex(/\.(fbx|glb|gltf)$/i).optional(),
+            walk: z.string().regex(/\.(fbx|glb|gltf)$/i).optional(),
+            run: z.string().regex(/\.(fbx|glb|gltf)$/i).optional(),
+          })
+          .optional(),
         transform: z
           .object({
             scale: z.object({ x: z.number(), y: z.number(), z: z.number() }).optional(),

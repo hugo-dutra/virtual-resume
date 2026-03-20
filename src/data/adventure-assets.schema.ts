@@ -12,6 +12,12 @@ const assetTransformSchema = z.object({
   rotationY: z.number().optional(),
 })
 
+const playerAnimationFilesSchema = z.object({
+  idle: z.string().regex(/\.(fbx|glb|gltf)$/i).optional(),
+  walk: z.string().regex(/\.(fbx|glb|gltf)$/i).optional(),
+  run: z.string().regex(/\.(fbx|glb|gltf)$/i).optional(),
+})
+
 export const adventureAssetSchema = z.object({
   assetId: z.string().min(1),
   category: z.enum(['experience', 'education', 'player', 'ground']),
@@ -20,6 +26,7 @@ export const adventureAssetSchema = z.object({
   description: z.string().min(1),
   format: z.enum(['glb', 'gltf']).default('glb'),
   transform: assetTransformSchema.optional(),
+  animations: playerAnimationFilesSchema.optional(),
 })
 
 export const adventureAssetsDocumentSchema = z.object({
