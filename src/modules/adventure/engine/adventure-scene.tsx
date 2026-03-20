@@ -26,6 +26,8 @@ import {
 
 const PLAYER_TURN_SMOOTHNESS = 7
 const PLAYER_STEER_SMOOTHNESS = 11
+const PLAYER_REVERSE_DIRECTION_DOT_THRESHOLD = -0.2
+const PLAYER_REVERSE_STEER_SMOOTHNESS = 24
 
 type InteractiveTarget =
   | {
@@ -325,8 +327,17 @@ export function AdventureScene({
 
     if (hasDirection) {
       desiredDirectionVector.normalize()
-      const steerLerpFactor = 1 - Math.exp(-PLAYER_STEER_SMOOTHNESS * delta)
-      smoothedDirectionVectorRef.current.lerp(desiredDirectionVector, steerLerpFactor).normalize()
+      const currentDirection = smoothedDirectionVectorRef.current
+      const directionAlignment = currentDirection.dot(desiredDirectionVector)
+
+      if (directionAlignment <= PLAYER_REVERSE_DIRECTION_DOT_THRESHOLD) {
+        // Keep smoothing but turn much faster on opposite input to avoid forward overshoot.
+        const reverseSteerLerpFactor = 1 - Math.exp(-PLAYER_REVERSE_STEER_SMOOTHNESS * delta)
+        currentDirection.lerp(desiredDirectionVector, reverseSteerLerpFactor).normalize()
+      } else {
+        const steerLerpFactor = 1 - Math.exp(-PLAYER_STEER_SMOOTHNESS * delta)
+        currentDirection.lerp(desiredDirectionVector, steerLerpFactor).normalize()
+      }
     }
 
     if (hasDirection) {
