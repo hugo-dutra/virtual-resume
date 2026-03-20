@@ -1,0 +1,9 @@
+export const MAP_SIZE = 44
+export const PLAYER_RADIUS = 0.45
+export const PLAYER_BASE_SPEED = 6
+
+export const CAMERA_FOLLOW_OFFSET = {
+  x: 0,
+  y: 13,
+  z: 11,
+} as const

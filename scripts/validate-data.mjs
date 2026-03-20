@@ -35,30 +35,60 @@ const profileDocumentSchema = z.object({
       github: z.string().url(),
     }),
   }),
-  skills: z.array(
-    z.object({
-      category: z.string().min(1),
-      items: z.array(z.string().min(1)).min(1),
-    }),
-  ).min(1),
-  education: z.array(
-    z.object({
-      institution: z.string().min(1),
-      degree: z.string().min(1),
-      period: z.string().min(1),
-      details: z.string().min(1),
-    }),
-  ).min(1),
-  projects: z.array(
-    z.object({
-      id: z.string().min(1),
-      name: z.string().min(1),
-      summary: z.string().min(1),
-      tech: z.array(z.string().min(1)).min(1),
-      link: z.string().url().optional(),
-      repo: z.string().url().optional(),
-    }),
-  ).min(1),
+  skills: z
+    .array(
+      z.object({
+        category: z.string().min(1),
+        items: z.array(z.string().min(1)).min(1),
+      }),
+    )
+    .min(1),
+  education: z
+    .array(
+      z.object({
+        institution: z.string().min(1),
+        degree: z.string().min(1),
+        period: z.string().min(1),
+        details: z.string().min(1),
+      }),
+    )
+    .min(1),
+  projects: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        summary: z.string().min(1),
+        tech: z.array(z.string().min(1)).min(1),
+        link: z.string().url().optional(),
+        repo: z.string().url().optional(),
+      }),
+    )
+    .min(1),
+})
+
+const buildingsDocumentSchema = z.object({
+  updatedAt: z.string().min(1),
+  buildings: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        experienceId: z.string().min(1),
+        position: z.object({
+          x: z.number(),
+          z: z.number(),
+        }),
+        size: z.object({
+          x: z.number().positive(),
+          y: z.number().positive(),
+          z: z.number().positive(),
+        }),
+        color: z.string().min(1),
+        zone: z.string().min(1),
+      }),
+    )
+    .min(1),
 })
 
 function validateJson(path, schema, label) {
@@ -77,6 +107,8 @@ function validateJson(path, schema, label) {
 
 const experiences = validateJson('../src/data/experiences.json', experiencesDocumentSchema, 'experiences.json')
 const profile = validateJson('../src/data/profile.json', profileDocumentSchema, 'profile.json')
+const buildings = validateJson('../src/data/buildings.json', buildingsDocumentSchema, 'buildings.json')
 
 console.log(`experiences.json is valid (${experiences.experiences.length} entries).`)
 console.log(`profile.json is valid (${profile.projects.length} projects).`)
+console.log(`buildings.json is valid (${buildings.buildings.length} buildings).`)

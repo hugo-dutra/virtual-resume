@@ -1,29 +1,39 @@
-import type { ElementType, HTMLAttributes, ReactNode } from 'react'
+import type { HTMLAttributes, ReactNode } from 'react'
 import { cn } from '../utils/cn'
 
-type CardProps<T extends ElementType> = {
-  as?: T
+type CardElement = 'section' | 'article' | 'div'
+
+type CardProps = {
+  as?: CardElement
   children: ReactNode
   className?: string
-} & Omit<HTMLAttributes<HTMLElement>, 'className'>
+} & HTMLAttributes<HTMLElement>
 
-export function Card<T extends ElementType = 'section'>({
-  as,
-  children,
-  className,
-  ...props
-}: CardProps<T>) {
-  const Component = as ?? 'section'
+export function Card({ as = 'section', children, className, ...props }: CardProps) {
+  const classes = cn(
+    'rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-900/70',
+    className,
+  )
+
+  if (as === 'article') {
+    return (
+      <article className={classes} {...props}>
+        {children}
+      </article>
+    )
+  }
+
+  if (as === 'div') {
+    return (
+      <div className={classes} {...props}>
+        {children}
+      </div>
+    )
+  }
 
   return (
-    <Component
-      className={cn(
-        'rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-900/70',
-        className,
-      )}
-      {...props}
-    >
+    <section className={classes} {...props}>
       {children}
-    </Component>
+    </section>
   )
 }
