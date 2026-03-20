@@ -14,7 +14,7 @@ const assetTransformSchema = z.object({
 
 export const adventureAssetSchema = z.object({
   assetId: z.string().min(1),
-  category: z.enum(['experience', 'education', 'player']),
+  category: z.enum(['experience', 'education', 'player', 'ground']),
   relationId: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),

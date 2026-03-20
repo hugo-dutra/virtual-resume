@@ -82,6 +82,10 @@ export function AdventureScene({
     () => allAssets.find((asset) => asset.category === 'player') ?? null,
     [allAssets],
   )
+  const groundAsset = useMemo(
+    () => allAssets.find((asset) => asset.category === 'ground') ?? null,
+    [allAssets],
+  )
   const experienceAssetMap = useMemo(() => {
     const map = new Map<string, AdventureAsset>()
 
@@ -306,7 +310,7 @@ export function AdventureScene({
       <fog attach="fog" args={['#020617', 18, 70]} />
 
       <AdventureLighting />
-      <AdventureGround />
+      <AdventureGround asset={groundAsset} />
       <PlayerEntity groupRef={playerGroupRef} asset={playerAsset} />
 
       {activeBuildings.map((building) => (

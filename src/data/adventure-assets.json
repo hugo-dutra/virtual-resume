@@ -66,6 +66,14 @@
       "format": "glb"
     },
     {
+      "assetId": "ground-main",
+      "category": "ground",
+      "relationId": "world-main",
+      "title": "Main Ground Model",
+      "description": "Optional terrain/city base model for the interactive map floor.",
+      "format": "glb"
+    },
+    {
       "assetId": "player-hugo-avatar",
       "category": "player",
       "relationId": "hugo-alves-dutra",
