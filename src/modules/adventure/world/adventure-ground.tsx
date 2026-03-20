@@ -16,6 +16,7 @@ export function AdventureGround({ asset }: AdventureGroundProps) {
   const modelUrl = getAssetModelUrl(asset)
   const { scene: modelScene } = useModelAsset(modelUrl)
   const { offset, rotation, scale } = resolveAssetTransform(asset)
+  const textureRepeat = MAP_SIZE / 7.33
 
   return (
     <group>
@@ -30,7 +31,7 @@ export function AdventureGround({ asset }: AdventureGroundProps) {
               map={terrainTexture}
               map-anisotropy={8}
               map-colorSpace={THREE.SRGBColorSpace}
-              map-repeat={[6, 6]}
+              map-repeat={[textureRepeat, textureRepeat]}
               map-wrapS={THREE.RepeatWrapping}
               map-wrapT={THREE.RepeatWrapping}
               roughness={0.92}

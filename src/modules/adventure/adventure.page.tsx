@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { buildingsData } from '../../data/buildings'
 import type { Building } from '../../data/buildings.schema'
 import { educationPlacesData } from '../../data/education-places'
+import type { EducationPlace } from '../../data/education-places.schema'
 import { experiencesData } from '../../data/experiences'
 import { useAppMode } from '../../shared/hooks/use-app-mode'
 import { useAppStore } from '../../shared/stores/use-app-store'
@@ -25,8 +26,8 @@ export function AdventurePage() {
   const setHoveredBuildingId = useAppStore((state) => state.setHoveredBuildingId)
   const audioEnabled = useAppStore((state) => state.audioEnabled)
   const toggleAudio = useAppStore((state) => state.toggleAudio)
-  const [activeBuildingCount, setActiveBuildingCount] = useState(buildingsData.buildings.length)
   const [playerPosition, setPlayerPosition] = useState<PlayerPosition>({ x: 0, z: 0 })
+  const [selectedEducationPlaceId, setSelectedEducationPlaceId] = useState<string | null>(null)
 
   useAdventureAudio(audioEnabled)
 
@@ -38,19 +39,46 @@ export function AdventurePage() {
     (building) => building.experienceId === activeExperienceId,
   )
 
-  const hoveredBuilding = buildingsData.buildings.find((building) => building.id === hoveredBuildingId)
+  const selectedEducationPlace = educationPlacesData.places.find((place) => place.id === selectedEducationPlaceId)
 
   const handleBuildingSelect = useCallback(
     (building: Building) => {
+      setSelectedEducationPlaceId(null)
       openPopup(building.experienceId)
     },
     [openPopup],
   )
 
-  const handleEmptySelect = useCallback(() => {
+  const handleEducationSelect = useCallback(
+    (place: EducationPlace) => {
+      closePopup()
+      setSelectedEducationPlaceId(place.id)
+      setHoveredBuildingId(null)
+    },
+    [closePopup, setHoveredBuildingId],
+  )
+
+  const handleCloseModal = useCallback(() => {
     closePopup()
+    setSelectedEducationPlaceId(null)
+  }, [closePopup])
+
+  const handleEducationMarkerSelect = useCallback(
+    (placeId: string) => {
+      const place = educationPlacesData.places.find((entry) => entry.id === placeId)
+      if (!place) {
+        return
+      }
+
+      handleEducationSelect(place)
+    },
+    [handleEducationSelect],
+  )
+
+  const handleEmptySelect = useCallback(() => {
+    handleCloseModal()
     setHoveredBuildingId(null)
-  }, [closePopup, setHoveredBuildingId])
+  }, [handleCloseModal, setHoveredBuildingId])
 
   const handlePlayerPositionChange = useCallback((position: PlayerPosition) => {
     setPlayerPosition((previousPosition) => {
@@ -59,6 +87,10 @@ export function AdventurePage() {
 
       return hasMovedEnough ? position : previousPosition
     })
+  }, [])
+
+  const handleActiveBuildingCountChange = useCallback(() => {
+    // Intentionally no-op: minimap is visual only without textual counters.
   }, [])
 
   return (
@@ -90,38 +122,51 @@ export function AdventurePage() {
           <AdventureCanvas
             hoveredBuildingId={hoveredBuildingId}
             selectedBuildingId={selectedBuilding?.id ?? null}
+            selectedEducationPlaceId={selectedEducationPlace?.id ?? null}
             onBuildingSelect={handleBuildingSelect}
+            onEducationSelect={handleEducationSelect}
             onEmptySelect={handleEmptySelect}
             onHoveredBuildingChange={setHoveredBuildingId}
-            onActiveBuildingCountChange={setActiveBuildingCount}
+            onActiveBuildingCountChange={handleActiveBuildingCountChange}
             onPlayerPositionChange={handlePlayerPositionChange}
           />
           <AdventureHud
-            buildingCount={buildingsData.buildings.length}
-            activeBuildingCount={activeBuildingCount}
-            hoveredBuildingName={hoveredBuilding?.name ?? null}
-            selectedBuildingName={selectedBuilding?.name ?? null}
             hoveredBuildingId={hoveredBuildingId}
             selectedBuildingId={selectedBuilding?.id ?? null}
+            selectedEducationPlaceId={selectedEducationPlace?.id ?? null}
             playerPosition={playerPosition}
             buildings={buildingsData.buildings}
             educationPlaces={educationPlacesData.places}
+            onEducationMarkerSelect={handleEducationMarkerSelect}
           />
         </div>
       </Card>
 
       <Card>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Phase 9 Status</h2>
-        <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-          Asset manifest enabled for buildings, study landmarks and player avatar. Models are read from
-          <code> /public/assets/models </code> and fallback to default geometry when a file is missing.
-        </p>
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Welcome to Career Quest</h2>
+        <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+          <p>
+            This interactive map is a playful way to explore my professional and academic journey. Walk around, find
+            landmarks, and click them to open the story behind each experience.
+          </p>
+          <p>
+            Use <strong>WASD</strong> (or arrow keys) to move, hold <strong>Shift</strong> to sprint, and use the
+            <strong> mouse scroll</strong> to zoom the camera from close view to far overview. Click buildings for
+            work experiences and diamond landmarks for academic milestones.
+          </p>
+        </div>
       </Card>
 
       <Modal
-        isOpen={Boolean(selectedExperience)}
-        title={selectedBuilding ? `${selectedBuilding.name} - ${selectedExperience?.company}` : 'Experience'}
-        onClose={closePopup}
+        isOpen={Boolean(selectedExperience || selectedEducationPlace)}
+        title={
+          selectedExperience && selectedBuilding
+            ? `${selectedBuilding.name} - ${selectedExperience.company}`
+            : selectedEducationPlace
+              ? `${selectedEducationPlace.name} - ${selectedEducationPlace.institution}`
+              : 'Details'
+        }
+        onClose={handleCloseModal}
       >
         {selectedExperience && selectedBuilding ? (
           <div className="space-y-4">
@@ -166,6 +211,29 @@ export function AdventurePage() {
                 ))}
               </ul>
             </div>
+          </div>
+        ) : null}
+
+        {selectedEducationPlace ? (
+          <div className="space-y-4">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <p>
+                <strong>Institution:</strong> {selectedEducationPlace.institution}
+              </p>
+              <p>
+                <strong>Period:</strong> {selectedEducationPlace.period}
+              </p>
+              <p>
+                <strong>Map zone:</strong> {selectedEducationPlace.zone}
+              </p>
+              <p>
+                <strong>Category:</strong> Academic Formation
+              </p>
+            </div>
+
+            <p>
+              <strong>Summary:</strong> {selectedEducationPlace.details}
+            </p>
           </div>
         ) : null}
       </Modal>

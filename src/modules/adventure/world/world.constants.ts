@@ -1,4 +1,4 @@
-export const MAP_SIZE = 44
+export const MAP_SIZE = 88
 export const PLAYER_RADIUS = 0.45
 export const PLAYER_BASE_SPEED = 6
 export const REGION_SIZE = 14

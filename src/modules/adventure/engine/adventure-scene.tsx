@@ -24,6 +24,16 @@ import {
   REGION_SIZE,
 } from '../world/world.constants'
 
+type InteractiveTarget =
+  | {
+      kind: 'building'
+      id: string
+    }
+  | {
+      kind: 'education'
+      id: string
+    }
+
 export type PlayerPosition = {
   x: number
   z: number
@@ -32,7 +42,9 @@ export type PlayerPosition = {
 type AdventureSceneProps = {
   hoveredBuildingId: string | null
   selectedBuildingId: string | null
+  selectedEducationPlaceId: string | null
   onBuildingSelect: (building: Building) => void
+  onEducationSelect: (place: EducationPlace) => void
   onEmptySelect: () => void
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
@@ -46,7 +58,9 @@ function getRegionCoordinate(position: number) {
 export function AdventureScene({
   hoveredBuildingId,
   selectedBuildingId,
+  selectedEducationPlaceId,
   onBuildingSelect,
+  onEducationSelect,
   onEmptySelect,
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
@@ -68,16 +82,20 @@ export function AdventureScene({
   const interactiveMeshesRef = useRef<Record<string, Mesh>>({})
   const activeRegionRef = useRef(activeRegion)
   const hudUpdateAccumulatorRef = useRef(0)
+  const cameraZoomFactorRef = useRef(1)
+  const targetCameraZoomFactorRef = useRef(1)
 
   const clickPointer = useMemo(() => new THREE.Vector2(), [])
   const cameraOffset = useMemo(
     () => new THREE.Vector3(CAMERA_FOLLOW_OFFSET.x, CAMERA_FOLLOW_OFFSET.y, CAMERA_FOLLOW_OFFSET.z),
     [],
   )
+  const zoomedCameraOffset = useMemo(() => new THREE.Vector3(), [])
   const movementVector = useMemo(() => new THREE.Vector3(), [])
   const target = useMemo(() => new THREE.Vector3(), [])
   const cameraTargetPosition = useMemo(() => new THREE.Vector3(), [])
   const buildingById = useMemo(() => new Map(allBuildings.map((building) => [building.id, building])), [allBuildings])
+  const educationPlaceById = useMemo(() => new Map(educationPlaces.map((place) => [place.id, place])), [educationPlaces])
   const playerAsset = useMemo(
     () => allAssets.find((asset) => asset.category === 'player') ?? null,
     [allAssets],
@@ -126,12 +144,13 @@ export function AdventureScene({
       const regionX = getRegionCoordinate(place.position.x)
       const regionZ = getRegionCoordinate(place.position.z)
 
-      return (
+      const isWithinRegionRange =
         Math.abs(regionX - activeRegion.x) <= ACTIVE_REGION_RADIUS &&
         Math.abs(regionZ - activeRegion.z) <= ACTIVE_REGION_RADIUS
-      )
+
+      return isWithinRegionRange || place.id === selectedEducationPlaceId
     })
-  }, [activeRegion.x, activeRegion.z, educationPlaces])
+  }, [activeRegion.x, activeRegion.z, educationPlaces, selectedEducationPlaceId])
 
   const registerInteractiveMesh = useCallback((buildingId: string, mesh: Mesh | null) => {
     if (mesh) {
@@ -154,7 +173,7 @@ export function AdventureScene({
     [onHoveredBuildingChange],
   )
 
-  const getIntersectedBuildingId = useCallback(
+  const getIntersectedTarget = useCallback(
     (sourcePointer: THREE.Vector2) => {
       const meshes = Object.values(interactiveMeshesRef.current)
       if (meshes.length === 0) {
@@ -167,7 +186,18 @@ export function AdventureScene({
       for (const intersection of intersections) {
         const buildingId = intersection.object.userData?.buildingId
         if (typeof buildingId === 'string') {
-          return buildingId
+          return {
+            kind: 'building',
+            id: buildingId,
+          } as InteractiveTarget
+        }
+
+        const educationPlaceId = intersection.object.userData?.educationPlaceId
+        if (typeof educationPlaceId === 'string') {
+          return {
+            kind: 'education',
+            id: educationPlaceId,
+          } as InteractiveTarget
         }
       }
 
@@ -213,30 +243,62 @@ export function AdventureScene({
         -((event.clientY - rect.top) / rect.height) * 2 + 1,
       )
 
-      const buildingId = getIntersectedBuildingId(clickPointer)
+      const targetEntity = getIntersectedTarget(clickPointer)
 
-      if (!buildingId) {
+      if (!targetEntity) {
         onEmptySelect()
         return
       }
 
-      const building = buildingById.get(buildingId)
-      if (building) {
-        onBuildingSelect(building)
+      if (targetEntity.kind === 'building') {
+        const building = buildingById.get(targetEntity.id)
+        if (building) {
+          onBuildingSelect(building)
+        }
+        return
       }
+
+      if (targetEntity.kind === 'education') {
+        const place = educationPlaceById.get(targetEntity.id)
+        if (place) {
+          onEducationSelect(place)
+        }
+      }
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      if (!pointerInsideRef.current) {
+        return
+      }
+
+      event.preventDefault()
+      const zoomDelta = event.deltaY * 0.0015
+      targetCameraZoomFactorRef.current = THREE.MathUtils.clamp(targetCameraZoomFactorRef.current + zoomDelta, 1, 3)
     }
 
     canvasElement.addEventListener('pointerenter', handlePointerEnter)
     canvasElement.addEventListener('pointerleave', handlePointerLeave)
     canvasElement.addEventListener('click', handleClick)
+    canvasElement.addEventListener('wheel', handleWheel, { passive: false })
 
     return () => {
       canvasElement.removeEventListener('pointerenter', handlePointerEnter)
       canvasElement.removeEventListener('pointerleave', handlePointerLeave)
       canvasElement.removeEventListener('click', handleClick)
+      canvasElement.removeEventListener('wheel', handleWheel)
       syncHoveredBuilding(null)
     }
-  }, [buildingById, clickPointer, getIntersectedBuildingId, gl, onBuildingSelect, onEmptySelect, syncHoveredBuilding])
+  }, [
+    buildingById,
+    clickPointer,
+    educationPlaceById,
+    getIntersectedTarget,
+    gl,
+    onBuildingSelect,
+    onEducationSelect,
+    onEmptySelect,
+    syncHoveredBuilding,
+  ])
 
   useFrame((_, delta) => {
     const playerBody = playerBodyRef.current
@@ -292,12 +354,19 @@ export function AdventureScene({
     }
 
     if (pointerInsideRef.current) {
-      const hoveredId = getIntersectedBuildingId(pointer)
-      syncHoveredBuilding(hoveredId)
+      const hoveredTarget = getIntersectedTarget(pointer)
+      syncHoveredBuilding(hoveredTarget?.kind === 'building' ? hoveredTarget.id : null)
     }
 
     target.set(playerBody.position.x, 0.6, playerBody.position.z)
-    cameraTargetPosition.copy(target).add(cameraOffset)
+    cameraZoomFactorRef.current = THREE.MathUtils.damp(
+      cameraZoomFactorRef.current,
+      targetCameraZoomFactorRef.current,
+      10,
+      delta,
+    )
+    zoomedCameraOffset.copy(cameraOffset).multiplyScalar(cameraZoomFactorRef.current)
+    cameraTargetPosition.copy(target).add(zoomedCameraOffset)
 
     const followStrength = 1 - Math.exp(-6 * delta)
     camera.position.lerp(cameraTargetPosition, followStrength)
@@ -329,6 +398,8 @@ export function AdventureScene({
           key={place.id}
           place={place}
           asset={educationAssetMap.get(place.educationId) ?? null}
+          isSelected={place.id === selectedEducationPlaceId}
+          registerInteractiveMesh={registerInteractiveMesh}
         />
       ))}
 

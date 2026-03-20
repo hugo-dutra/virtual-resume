@@ -16,6 +16,8 @@ export const educationPlaceSchema = z.object({
   educationId: z.string().min(1),
   name: z.string().min(1),
   institution: z.string().min(1),
+  period: z.string().min(1),
+  details: z.string().min(1),
   position: positionSchema,
   size: sizeSchema,
   color: z.string().min(1),

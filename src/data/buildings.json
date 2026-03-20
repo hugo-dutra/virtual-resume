@@ -5,55 +5,55 @@
       "id": "building-foton",
       "name": "Foton Tower",
       "experienceId": "foton-informatica",
-      "position": { "x": -8, "z": -6 },
+      "position": { "x": -32, "z": -24 },
       "size": { "x": 4.8, "y": 4.4, "z": 4.8 },
       "color": "#2563eb",
-      "zone": "Integration District"
+      "zone": "West Integration District"
     },
     {
       "id": "building-ilia",
       "name": "Ilia Hub",
       "experienceId": "ilia",
-      "position": { "x": 8, "z": -4 },
+      "position": { "x": 30, "z": -22 },
       "size": { "x": 3.6, "y": 3.1, "z": 3.6 },
       "color": "#0ea5e9",
-      "zone": "Marketplace Square"
+      "zone": "East Marketplace Square"
     },
     {
       "id": "building-seedf",
       "name": "SEEDF Base",
       "experienceId": "seedf",
-      "position": { "x": 2, "z": 9 },
+      "position": { "x": 8, "z": 32 },
       "size": { "x": 5.2, "y": 3.8, "z": 5.2 },
       "color": "#14b8a6",
-      "zone": "Public Services Hills"
+      "zone": "North Public Services Hills"
     },
     {
       "id": "building-infinity",
       "name": "Infinity Campus",
       "experienceId": "infinity",
-      "position": { "x": -14, "z": 8 },
+      "position": { "x": -34, "z": 18 },
       "size": { "x": 3.8, "y": 3.2, "z": 3.8 },
       "color": "#f43f5e",
-      "zone": "Healthcare Arc"
+      "zone": "Northwest Healthcare Arc"
     },
     {
       "id": "building-physics-teacher-seedf",
       "name": "Teacher Pavilion",
       "experienceId": "physics-teacher-seedf",
-      "position": { "x": 13, "z": 6 },
+      "position": { "x": 33, "z": 12 },
       "size": { "x": 4.2, "y": 2.8, "z": 4.2 },
       "color": "#f59e0b",
-      "zone": "Learning District"
+      "zone": "Northeast Learning District"
     },
     {
       "id": "building-autotrac",
       "name": "Autotrac Node",
       "experienceId": "autotrac",
-      "position": { "x": -13, "z": -13 },
+      "position": { "x": -24, "z": -34 },
       "size": { "x": 3.6, "y": 3.1, "z": 3.6 },
       "color": "#06b6d4",
-      "zone": "Telecom Valley"
+      "zone": "Southwest Telecom Valley"
     }
   ]
 }

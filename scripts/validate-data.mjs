@@ -123,6 +123,8 @@ const educationPlacesDocumentSchema = z.object({
         educationId: z.string().min(1),
         name: z.string().min(1),
         institution: z.string().min(1),
+        period: z.string().min(1),
+        details: z.string().min(1),
         position: z.object({ x: z.number(), z: z.number() }),
         size: z.object({
           x: z.number().positive(),
