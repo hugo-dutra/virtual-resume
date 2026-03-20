@@ -1,53 +1,54 @@
 import { Link } from 'react-router-dom'
 import { experiencesData } from '../../data/experiences'
+import { profileData } from '../../data/profile'
 import { useAppMode } from '../../shared/hooks/use-app-mode'
-import { Card } from '../../shared/ui/card'
-import { SectionTitle } from '../../shared/components/section-title'
+import { useThemeClass } from '../../shared/hooks/use-theme-class'
+import { useAppStore } from '../../shared/stores/use-app-store'
+import { EducationSection } from './sections/education.section'
+import { ExperienceTimelineSection } from './sections/experience-timeline.section'
+import { ProfessionalSummarySection } from './sections/professional-summary.section'
+import { ProjectsSection } from './sections/projects.section'
+import { ResumeHeaderSection } from './sections/resume-header.section'
+import { SkillsSection } from './sections/skills.section'
 
 export function TraditionalPage() {
   useAppMode('traditional')
+  useThemeClass()
+
+  const theme = useAppStore((state) => state.theme)
+  const toggleTheme = useAppStore((state) => state.toggleTheme)
+
+  const handlePrint = () => {
+    window.print()
+  }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-6 py-12">
-      <header className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-semibold text-slate-900">Curriculo Tradicional</h1>
-        <Link className="text-sm font-medium text-sky-700 hover:underline" to="/">
+    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-6 py-12 print:max-w-none print:px-0 print:py-0">
+      <header className="no-print flex items-center justify-between gap-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          Modo Tradicional
+        </p>
+        <Link className="text-sm font-medium text-sky-700 hover:underline dark:text-sky-300" to="/">
           Voltar
         </Link>
       </header>
 
-      <SectionTitle
-        subtitle={`Ultima atualizacao: ${experiencesData.updatedAt}`}
-        title="Experiencias Profissionais"
+      <ResumeHeaderSection
+        person={profileData.person}
+        onToggleTheme={toggleTheme}
+        onPrint={handlePrint}
+        themeLabel={theme === 'dark' ? 'escuro' : 'claro'}
       />
 
-      <div className="grid gap-4">
-        {experiencesData.experiences.map((experience) => (
-          <Card key={experience.id} as="article">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">{experience.role}</h2>
-                <p className="text-sm text-slate-600">{experience.company}</p>
-              </div>
-              <p className="text-sm text-slate-500">{experience.period}</p>
-            </div>
+      <ProfessionalSummarySection person={profileData.person} />
+      <ExperienceTimelineSection experiences={experiencesData.experiences} />
+      <SkillsSection skills={profileData.skills} />
+      <EducationSection education={profileData.education} />
+      <ProjectsSection projects={profileData.projects} />
 
-            <p className="mt-3 text-sm text-slate-700">{experience.summary}</p>
-            <p className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">{experience.location}</p>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {experience.tech.map((tech) => (
-                <span
-                  key={`${experience.id}-${tech}`}
-                  className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </Card>
-        ))}
-      </div>
+      <footer className="pt-2 text-xs text-slate-500 dark:text-slate-400 print:mt-6 print:text-slate-700">
+        Atualizado em {profileData.updatedAt}
+      </footer>
     </main>
   )
 }

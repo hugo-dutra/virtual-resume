@@ -79,7 +79,7 @@ export function LandingPage() {
         <div className="space-y-6">
           <motion.p
             data-gsap-badge
-            className="inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700"
+            className="inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:border-sky-700 dark:bg-sky-900/40 dark:text-sky-200"
             variants={motionItem}
           >
             Portfolio Experience
@@ -92,7 +92,7 @@ export function LandingPage() {
             />
           </motion.div>
 
-          <motion.p className="max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base" variants={motionItem}>
+          <motion.p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base" variants={motionItem}>
             O modo Tradicional prioriza leitura rapida para recrutadores. O modo Adventure cria uma experiencia
             interativa memoravel com storytelling das experiencias profissionais.
           </motion.p>
@@ -102,7 +102,7 @@ export function LandingPage() {
               Audio ambiente: {audioEnabled ? 'ligado' : 'desligado'}
             </Button>
             <Button
-              className="bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100"
+              className="bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800"
               onClick={() => {
                 const section = document.querySelector('[data-mode-grid]')
                 section?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -112,11 +112,7 @@ export function LandingPage() {
             </Button>
           </motion.div>
 
-          <motion.div
-            className="grid gap-4 sm:grid-cols-2"
-            data-mode-grid
-            variants={motionItem}
-          >
+          <motion.div className="grid gap-4 sm:grid-cols-2" data-mode-grid variants={motionItem}>
             <ModeCard
               to="/traditional"
               tag="Modo 01"

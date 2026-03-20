@@ -1,0 +1,62 @@
+{
+  "updatedAt": "2026-03-20",
+  "person": {
+    "name": "Seu Nome",
+    "title": "Senior Frontend Engineer",
+    "location": "Sao Paulo, BR",
+    "summary": "Engenheiro de software com foco em produtos web de alta qualidade, performance e experiencia de usuario. Atuacao com lideranca tecnica, arquitetura frontend e colaboracao entre times de produto.",
+    "avatarAlt": "Foto profissional",
+    "contact": {
+      "email": "contato@seudominio.com",
+      "phone": "+55 11 99999-9999",
+      "website": "https://seudominio.com",
+      "linkedin": "https://www.linkedin.com/in/seu-perfil",
+      "github": "https://github.com/seu-usuario"
+    }
+  },
+  "skills": [
+    {
+      "category": "Frontend",
+      "items": ["React", "TypeScript", "Next.js", "Tailwind CSS", "Framer Motion"]
+    },
+    {
+      "category": "Backend e Dados",
+      "items": ["Node.js", "REST APIs", "GraphQL", "PostgreSQL", "Redis"]
+    },
+    {
+      "category": "Cloud e Qualidade",
+      "items": ["AWS", "Docker", "CI/CD", "Vitest", "Playwright"]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidade Exemplo",
+      "degree": "Bacharelado em Ciencia da Computacao",
+      "period": "2011 - 2015",
+      "details": "Base forte em algoritmos, estruturas de dados e engenharia de software."
+    },
+    {
+      "institution": "Especializacao Exemplo",
+      "degree": "Pos-graduacao em Arquitetura de Software",
+      "period": "2017 - 2018",
+      "details": "Foco em arquitetura distribuida, observabilidade e escalabilidade."
+    }
+  ],
+  "projects": [
+    {
+      "id": "plataforma-x",
+      "name": "Plataforma X",
+      "summary": "Portal web para operacoes internas com dashboards em tempo real e fluxos criticos de negocio.",
+      "tech": ["React", "TypeScript", "Node.js", "AWS"],
+      "link": "https://seudominio.com/projetos/plataforma-x",
+      "repo": "https://github.com/seu-usuario/plataforma-x"
+    },
+    {
+      "id": "app-y",
+      "name": "App Y",
+      "summary": "Aplicacao B2B com onboarding guiado e modulos de automacao para equipes comerciais.",
+      "tech": ["Next.js", "GraphQL", "PostgreSQL"],
+      "link": "https://seudominio.com/projetos/app-y"
+    }
+  ]
+}

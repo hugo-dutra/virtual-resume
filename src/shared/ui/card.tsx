@@ -18,7 +18,7 @@ export function Card<T extends ElementType = 'section'>({
   return (
     <Component
       className={cn(
-        'rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md',
+        'rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-900/70',
         className,
       )}
       {...props}
