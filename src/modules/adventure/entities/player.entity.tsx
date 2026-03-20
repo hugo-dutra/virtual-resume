@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, type MutableRefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type MutableRefObject } from 'react'
 import { useAnimations } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import type { AnimationAction, AnimationClip, Group } from 'three'
 import * as THREE from 'three'
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
@@ -9,12 +10,12 @@ import { useModelAsset } from '../hooks/use-model-asset'
 import { getAssetModelUrl, getPlayerAnimationUrls, resolveAssetTransform } from '../utils/adventure-asset-resolver'
 import { PLAYER_RADIUS } from '../world/world.constants'
 
-export type PlayerAnimationState = 'idle' | 'walk' | 'run'
+type PlayerAnimationState = 'idle' | 'run'
 
 type PlayerEntityProps = {
   groupRef: MutableRefObject<Group | null>
   asset: AdventureAsset | null
-  animationState: PlayerAnimationState
+  movementInputRef: MutableRefObject<boolean>
 }
 
 function normalizeClipName(name: string) {
@@ -26,17 +27,21 @@ function findEmbeddedClip(animations: AnimationClip[], keywords: string[]) {
   return normalizedPairs.find((entry) => keywords.some((keyword) => entry.normalized.includes(keyword)))?.clip
 }
 
-export function PlayerEntity({ groupRef, asset, animationState }: PlayerEntityProps) {
+export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntityProps) {
   const modelUrl = getAssetModelUrl(asset)
-  const { scene: modelScene, animations } = useModelAsset(modelUrl)
+  const { scene: glbScene, animations: glbAnimations } = useModelAsset(modelUrl)
   const animationUrls = useMemo(() => getPlayerAnimationUrls(asset), [asset])
-  const fallbackModelUrl = animationUrls.idle ?? animationUrls.walk ?? animationUrls.run ?? null
-  const { scene: fallbackModelScene, animations: fallbackModelAnimations } = useFbxModelAsset(fallbackModelUrl)
+  const { scene: idleFbxScene, animations: idleFbxAnimations } = useFbxModelAsset(animationUrls.idle ?? null)
+  const { scene: runFbxScene, animations: runFbxAnimations } = useFbxModelAsset(animationUrls.run ?? null)
   const externalClips = useExternalAnimationClips(animationUrls)
   const { offset, rotation, scale } = resolveAssetTransform(asset)
   const currentActionRef = useRef<AnimationAction | null>(null)
-  const resolvedModelScene = modelScene ?? fallbackModelScene
-  const sourceAnimations = animations.length > 0 ? animations : fallbackModelAnimations
+  const activeStateRef = useRef<PlayerAnimationState | null>(null)
+
+  const resolvedModelScene = glbScene ?? idleFbxScene ?? runFbxScene
+  const sourceAnimations =
+    glbAnimations.length > 0 ? glbAnimations : idleFbxAnimations.length > 0 ? idleFbxAnimations : runFbxAnimations
+
   const normalizedModelTransform = useMemo(() => {
     if (!resolvedModelScene) {
       return {
@@ -63,6 +68,7 @@ export function PlayerEntity({ groupRef, asset, animationState }: PlayerEntityPr
 
     return { scaleMultiplier, groundedOffsetY }
   }, [resolvedModelScene])
+
   const finalModelScale = useMemo(
     () =>
       [scale[0], scale[1], scale[2]].map(
@@ -70,84 +76,108 @@ export function PlayerEntity({ groupRef, asset, animationState }: PlayerEntityPr
       ) as [number, number, number],
     [normalizedModelTransform.scaleMultiplier, scale],
   )
+
   const finalModelPosition = useMemo(
     () => [offset[0], offset[1] + normalizedModelTransform.groundedOffsetY, offset[2]] as [number, number, number],
     [normalizedModelTransform.groundedOffsetY, offset],
   )
+
   const embeddedClips = useMemo(() => {
     const firstClip = sourceAnimations[0]
 
     return {
       idle: findEmbeddedClip(sourceAnimations, ['idle']) ?? firstClip,
-      walk: findEmbeddedClip(sourceAnimations, ['walk', 'locomotion']),
-      run: findEmbeddedClip(sourceAnimations, ['run', 'sprint', 'jog']),
+      run: findEmbeddedClip(sourceAnimations, ['run', 'sprint', 'jog']) ?? sourceAnimations[1] ?? firstClip,
     }
   }, [sourceAnimations])
+
   const resolvedClips = useMemo(() => {
     const idle = externalClips.idle ?? embeddedClips.idle
-    const walk =
-      externalClips.walk ??
-      embeddedClips.walk ??
-      externalClips.run ??
-      embeddedClips.run ??
-      externalClips.idle ??
-      embeddedClips.idle
-    const run =
-      externalClips.run ??
-      embeddedClips.run ??
-      externalClips.walk ??
-      embeddedClips.walk ??
-      externalClips.idle ??
-      embeddedClips.idle
+    const run = externalClips.run ?? embeddedClips.run ?? idle
+    return { idle, run }
+  }, [embeddedClips.idle, embeddedClips.run, externalClips.idle, externalClips.run])
 
-    return { idle, walk, run }
-  }, [embeddedClips.idle, embeddedClips.run, embeddedClips.walk, externalClips.idle, externalClips.run, externalClips.walk])
   const animationSet = useMemo(() => {
-    const set: AnimationClip[] = []
-    const pushStateClip = (state: PlayerAnimationState, clip: AnimationClip | undefined) => {
-      if (!clip) {
-        return
-      }
+    if (!resolvedModelScene) {
+      return []
+    }
 
-      const clone = clip.clone()
-      clone.name = `state-${state}`
+    const set: AnimationClip[] = []
+
+    const idleClip = resolvedClips.idle
+    if (idleClip) {
+      const clone = idleClip.clone()
+      clone.name = 'state-idle'
       set.push(clone)
     }
 
-    pushStateClip('idle', resolvedClips.idle)
-    pushStateClip('walk', resolvedClips.walk)
-    pushStateClip('run', resolvedClips.run)
+    const runClip = resolvedClips.run
+    if (runClip) {
+      const clone = runClip.clone()
+      clone.name = 'state-run'
+      set.push(clone)
+    }
 
     return set
-  }, [resolvedClips.idle, resolvedClips.run, resolvedClips.walk])
-  const { actions } = useAnimations(animationSet, groupRef)
+  }, [resolvedClips.idle, resolvedClips.run, resolvedModelScene])
+
+  const { actions } = useAnimations(animationSet, resolvedModelScene ?? undefined)
+
+  const playState = useCallback(
+    (state: PlayerAnimationState) => {
+      const nextAction = actions[`state-${state}`] ?? actions['state-idle'] ?? actions['state-run']
+      if (!nextAction) {
+        return
+      }
+
+      if (currentActionRef.current === nextAction) {
+        if (!nextAction.isRunning()) {
+          nextAction.play()
+        }
+        activeStateRef.current = state
+        return
+      }
+
+      nextAction.setLoop(THREE.LoopRepeat, Infinity)
+      nextAction.setEffectiveTimeScale(1)
+      nextAction.setEffectiveWeight(1)
+      nextAction.reset().fadeIn(0.12).play()
+
+      if (currentActionRef.current && currentActionRef.current !== nextAction) {
+        currentActionRef.current.fadeOut(0.12)
+      }
+
+      currentActionRef.current = nextAction
+      activeStateRef.current = state
+    },
+    [actions],
+  )
 
   useEffect(() => {
     if (!resolvedModelScene || animationSet.length === 0) {
       return
     }
 
-    const primaryActionName = `state-${animationState}`
-    const fallbackActionName = animationSet[0]?.name
-    const nextAction = actions[primaryActionName] ?? (fallbackActionName ? actions[fallbackActionName] : undefined)
-    if (!nextAction) {
+    const initialState: PlayerAnimationState = movementInputRef.current ? 'run' : 'idle'
+    playState(initialState)
+
+    return () => {
+      if (currentActionRef.current) {
+        currentActionRef.current.fadeOut(0.1)
+      }
+    }
+  }, [animationSet.length, movementInputRef, playState, resolvedModelScene])
+
+  useFrame(() => {
+    if (!resolvedModelScene || animationSet.length === 0) {
       return
     }
 
-    nextAction.reset().fadeIn(0.16).play()
-
-    if (currentActionRef.current && currentActionRef.current !== nextAction) {
-      currentActionRef.current.fadeOut(0.16)
+    const desiredState: PlayerAnimationState = movementInputRef.current ? 'run' : 'idle'
+    if (activeStateRef.current !== desiredState) {
+      playState(desiredState)
     }
-
-    currentActionRef.current = nextAction
-
-    return () => {
-      if (currentActionRef.current === nextAction) {
-        nextAction.fadeOut(0.16)
-      }
-    }
-  }, [actions, animationSet, animationState, resolvedModelScene])
+  })
 
   return (
     <group ref={groupRef} position={[0, PLAYER_RADIUS, 0]}>

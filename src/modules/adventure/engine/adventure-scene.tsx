@@ -10,7 +10,7 @@ import { educationPlacesData } from '../../../data/education-places'
 import type { EducationPlace } from '../../../data/education-places.schema'
 import { BuildingEntity } from '../entities/building.entity'
 import { EducationLandmarkEntity } from '../entities/education-landmark.entity'
-import { PlayerEntity, type PlayerAnimationState } from '../entities/player.entity'
+import { PlayerEntity } from '../entities/player.entity'
 import { useKeyboardControls } from '../hooks/use-keyboard-controls'
 import { useAdventurePhysics } from '../systems/use-adventure-physics'
 import { AdventureGround } from '../world/adventure-ground'
@@ -75,14 +75,13 @@ export function AdventureScene({
   const { world, playerBodyRef } = useAdventurePhysics(allObstacles)
 
   const [activeRegion, setActiveRegion] = useState(() => ({ x: 0, z: 0 }))
-  const [playerAnimationState, setPlayerAnimationState] = useState<PlayerAnimationState>('idle')
 
   const playerGroupRef = useRef<Group | null>(null)
   const pointerInsideRef = useRef(false)
   const currentHoveredRef = useRef<string | null>(null)
   const interactiveMeshesRef = useRef<Record<string, Mesh>>({})
   const activeRegionRef = useRef(activeRegion)
-  const playerAnimationStateRef = useRef<PlayerAnimationState>('idle')
+  const movementInputRef = useRef(false)
   const hudUpdateAccumulatorRef = useRef(0)
   const cameraZoomFactorRef = useRef(1)
   const targetCameraZoomFactorRef = useRef(1)
@@ -311,15 +310,11 @@ export function AdventureScene({
     const controls = controlsRef.current
     const axisX = Number(controls.right) - Number(controls.left)
     const axisZ = Number(controls.backward) - Number(controls.forward)
+    const hasMovementInput = controls.forward || controls.backward || controls.left || controls.right
+    movementInputRef.current = hasMovementInput
 
     movementVector.set(axisX, 0, axisZ)
     const isMoving = movementVector.lengthSq() > 0
-    const nextAnimationState: PlayerAnimationState = !isMoving ? 'idle' : 'run'
-
-    if (nextAnimationState !== playerAnimationStateRef.current) {
-      playerAnimationStateRef.current = nextAnimationState
-      setPlayerAnimationState(nextAnimationState)
-    }
 
     if (isMoving) {
       const speed = controls.sprint ? PLAYER_BASE_SPEED * 1.35 : PLAYER_BASE_SPEED
@@ -388,7 +383,7 @@ export function AdventureScene({
 
       <AdventureLighting />
       <AdventureGround asset={groundAsset} />
-      <PlayerEntity groupRef={playerGroupRef} asset={playerAsset} animationState={playerAnimationState} />
+      <PlayerEntity groupRef={playerGroupRef} asset={playerAsset} movementInputRef={movementInputRef} />
 
       {activeBuildings.map((building) => (
         <BuildingEntity

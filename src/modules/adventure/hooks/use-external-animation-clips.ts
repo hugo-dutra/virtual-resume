@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as THREE from 'three'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 
@@ -93,30 +93,28 @@ export function useExternalAnimationClips(urls: ClipUrls): ClipMap {
     }
   }, [idleUrl, runUrl, walkUrl])
 
-  return useMemo(() => {
-    const output: ClipMap = {}
+  const output: ClipMap = {}
 
-    if (idleUrl) {
-      const clip = clipCache.get(idleUrl)
-      if (clip) {
-        output.idle = clip
-      }
+  if (idleUrl) {
+    const clip = clipCache.get(idleUrl)
+    if (clip) {
+      output.idle = clip
     }
+  }
 
-    if (walkUrl) {
-      const clip = clipCache.get(walkUrl)
-      if (clip) {
-        output.walk = clip
-      }
+  if (walkUrl) {
+    const clip = clipCache.get(walkUrl)
+    if (clip) {
+      output.walk = clip
     }
+  }
 
-    if (runUrl) {
-      const clip = clipCache.get(runUrl)
-      if (clip) {
-        output.run = clip
-      }
+  if (runUrl) {
+    const clip = clipCache.get(runUrl)
+    if (clip) {
+      output.run = clip
     }
+  }
 
-    return output
-  }, [idleUrl, runUrl, walkUrl])
+  return output
 }
