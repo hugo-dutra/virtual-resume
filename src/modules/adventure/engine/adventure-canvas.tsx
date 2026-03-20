@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import type { Building } from '../../../data/buildings.schema'
 import { AdventureScene } from './adventure-scene'
@@ -8,6 +10,7 @@ type AdventureCanvasProps = {
   onBuildingSelect: (building: Building) => void
   onEmptySelect: () => void
   onHoveredBuildingChange: (buildingId: string | null) => void
+  onActiveBuildingCountChange: (count: number) => void
 }
 
 export function AdventureCanvas({
@@ -16,6 +19,7 @@ export function AdventureCanvas({
   onBuildingSelect,
   onEmptySelect,
   onHoveredBuildingChange,
+  onActiveBuildingCountChange,
 }: AdventureCanvasProps) {
   return (
     <div className="h-full w-full">
@@ -23,15 +27,23 @@ export function AdventureCanvas({
         camera={{ position: [0, 13, 11], fov: 45, near: 0.1, far: 220 }}
         dpr={[1, 2]}
         gl={{ antialias: true }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping
+          gl.toneMappingExposure = 1.06
+          gl.outputColorSpace = THREE.SRGBColorSpace
+        }}
         shadows
       >
-        <AdventureScene
-          hoveredBuildingId={hoveredBuildingId}
-          selectedBuildingId={selectedBuildingId}
-          onBuildingSelect={onBuildingSelect}
-          onEmptySelect={onEmptySelect}
-          onHoveredBuildingChange={onHoveredBuildingChange}
-        />
+        <Suspense fallback={null}>
+          <AdventureScene
+            hoveredBuildingId={hoveredBuildingId}
+            selectedBuildingId={selectedBuildingId}
+            onBuildingSelect={onBuildingSelect}
+            onEmptySelect={onEmptySelect}
+            onHoveredBuildingChange={onHoveredBuildingChange}
+            onActiveBuildingCountChange={onActiveBuildingCountChange}
+          />
+        </Suspense>
       </Canvas>
     </div>
   )

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { buildingsData } from '../../data/buildings'
 import type { Building } from '../../data/buildings.schema'
@@ -9,7 +9,9 @@ import { Button } from '../../shared/ui/button'
 import { Card } from '../../shared/ui/card'
 import { Modal } from '../../shared/ui/modal'
 import { AdventureCanvas } from './engine/adventure-canvas'
+import { useAdventureAudio } from './hooks/use-adventure-audio'
 import { AdventureHud } from './ui/adventure-hud'
+import { AdventureLoadingOverlay } from './ui/adventure-loading-overlay'
 
 export function AdventurePage() {
   useAppMode('adventure')
@@ -21,6 +23,9 @@ export function AdventurePage() {
   const setHoveredBuildingId = useAppStore((state) => state.setHoveredBuildingId)
   const audioEnabled = useAppStore((state) => state.audioEnabled)
   const toggleAudio = useAppStore((state) => state.toggleAudio)
+  const [activeBuildingCount, setActiveBuildingCount] = useState(buildingsData.buildings.length)
+
+  useAdventureAudio(audioEnabled)
 
   const selectedExperience = experiencesData.experiences.find(
     (experience) => experience.id === activeExperienceId,
@@ -69,15 +74,18 @@ export function AdventurePage() {
 
       <Card className="overflow-hidden p-0">
         <div className="relative h-[68vh] min-h-[500px] w-full bg-slate-950">
+          <AdventureLoadingOverlay />
           <AdventureCanvas
             hoveredBuildingId={hoveredBuildingId}
             selectedBuildingId={selectedBuilding?.id ?? null}
             onBuildingSelect={handleBuildingSelect}
             onEmptySelect={handleEmptySelect}
             onHoveredBuildingChange={setHoveredBuildingId}
+            onActiveBuildingCountChange={setActiveBuildingCount}
           />
           <AdventureHud
             buildingCount={buildingsData.buildings.length}
+            activeBuildingCount={activeBuildingCount}
             hoveredBuildingName={hoveredBuilding?.name ?? null}
             selectedBuildingName={selectedBuilding?.name ?? null}
           />
@@ -85,10 +93,10 @@ export function AdventurePage() {
       </Card>
 
       <Card>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Status da Fase 6</h2>
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Status da Fase 7</h2>
         <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-          Raycasting centralizado para hover e clique, highlight de predios no estado global e popup dinamico com dados
-          completos da experiencia selecionada.
+          Audio ambiente com Howler, loading screen com progresso real de assets, post-processing leve e renderizacao
+          por regiao para manter o mapa mais eficiente.
         </p>
       </Card>
 

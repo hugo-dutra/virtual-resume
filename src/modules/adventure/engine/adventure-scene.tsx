@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { Group, Mesh } from 'three'
 import * as THREE from 'three'
@@ -10,7 +10,14 @@ import { useKeyboardControls } from '../hooks/use-keyboard-controls'
 import { useAdventurePhysics } from '../systems/use-adventure-physics'
 import { AdventureGround } from '../world/adventure-ground'
 import { AdventureLighting } from '../world/adventure-lighting'
-import { CAMERA_FOLLOW_OFFSET, PLAYER_BASE_SPEED } from '../world/world.constants'
+import { AdventurePostprocessing } from '../world/adventure-postprocessing'
+import {
+  ACTIVE_REGION_RADIUS,
+  CAMERA_FOLLOW_OFFSET,
+  MAP_SIZE,
+  PLAYER_BASE_SPEED,
+  REGION_SIZE,
+} from '../world/world.constants'
 
 type AdventureSceneProps = {
   hoveredBuildingId: string | null
@@ -18,6 +25,11 @@ type AdventureSceneProps = {
   onBuildingSelect: (building: Building) => void
   onEmptySelect: () => void
   onHoveredBuildingChange: (buildingId: string | null) => void
+  onActiveBuildingCountChange: (count: number) => void
+}
+
+function getRegionCoordinate(position: number) {
+  return Math.floor((position + MAP_SIZE / 2) / REGION_SIZE)
 }
 
 export function AdventureScene({
@@ -26,15 +38,20 @@ export function AdventureScene({
   onBuildingSelect,
   onEmptySelect,
   onHoveredBuildingChange,
+  onActiveBuildingCountChange,
 }: AdventureSceneProps) {
   const { camera, gl, pointer, raycaster } = useThree()
   const controlsRef = useKeyboardControls()
-  const { world, playerBodyRef } = useAdventurePhysics(buildingsData.buildings)
+  const allBuildings = useMemo(() => buildingsData.buildings, [])
+  const { world, playerBodyRef } = useAdventurePhysics(allBuildings)
+
+  const [activeRegion, setActiveRegion] = useState(() => ({ x: 0, z: 0 }))
 
   const playerGroupRef = useRef<Group | null>(null)
   const pointerInsideRef = useRef(false)
   const currentHoveredRef = useRef<string | null>(null)
   const interactiveMeshesRef = useRef<Record<string, Mesh>>({})
+  const activeRegionRef = useRef(activeRegion)
 
   const clickPointer = useMemo(() => new THREE.Vector2(), [])
   const cameraOffset = useMemo(
@@ -44,10 +61,20 @@ export function AdventureScene({
   const movementVector = useMemo(() => new THREE.Vector3(), [])
   const target = useMemo(() => new THREE.Vector3(), [])
   const cameraTargetPosition = useMemo(() => new THREE.Vector3(), [])
-  const buildingById = useMemo(
-    () => new Map(buildingsData.buildings.map((building) => [building.id, building])),
-    [],
-  )
+  const buildingById = useMemo(() => new Map(allBuildings.map((building) => [building.id, building])), [allBuildings])
+
+  const activeBuildings = useMemo(() => {
+    return allBuildings.filter((building) => {
+      const regionX = getRegionCoordinate(building.position.x)
+      const regionZ = getRegionCoordinate(building.position.z)
+
+      const isWithinRegionRange =
+        Math.abs(regionX - activeRegion.x) <= ACTIVE_REGION_RADIUS &&
+        Math.abs(regionZ - activeRegion.z) <= ACTIVE_REGION_RADIUS
+
+      return isWithinRegionRange || building.id === selectedBuildingId
+    })
+  }, [activeRegion.x, activeRegion.z, allBuildings, selectedBuildingId])
 
   const registerInteractiveMesh = useCallback((buildingId: string, mesh: Mesh | null) => {
     if (mesh) {
@@ -95,6 +122,16 @@ export function AdventureScene({
   useEffect(() => {
     camera.position.set(CAMERA_FOLLOW_OFFSET.x, CAMERA_FOLLOW_OFFSET.y, CAMERA_FOLLOW_OFFSET.z)
   }, [camera])
+
+  useEffect(() => {
+    onActiveBuildingCountChange(activeBuildings.length)
+  }, [activeBuildings.length, onActiveBuildingCountChange])
+
+  useEffect(() => {
+    if (hoveredBuildingId && !activeBuildings.some((building) => building.id === hoveredBuildingId)) {
+      syncHoveredBuilding(null)
+    }
+  }, [activeBuildings, hoveredBuildingId, syncHoveredBuilding])
 
   useEffect(() => {
     const canvasElement = gl.domElement
@@ -177,6 +214,16 @@ export function AdventureScene({
       }
     }
 
+    const nextRegion = {
+      x: getRegionCoordinate(playerBody.position.x),
+      z: getRegionCoordinate(playerBody.position.z),
+    }
+
+    if (nextRegion.x !== activeRegionRef.current.x || nextRegion.z !== activeRegionRef.current.z) {
+      activeRegionRef.current = nextRegion
+      setActiveRegion(nextRegion)
+    }
+
     if (pointerInsideRef.current) {
       const hoveredId = getIntersectedBuildingId(pointer)
       syncHoveredBuilding(hoveredId)
@@ -199,7 +246,7 @@ export function AdventureScene({
       <AdventureGround />
       <PlayerEntity groupRef={playerGroupRef} />
 
-      {buildingsData.buildings.map((building) => (
+      {activeBuildings.map((building) => (
         <BuildingEntity
           key={building.id}
           building={building}
@@ -208,6 +255,8 @@ export function AdventureScene({
           registerInteractiveMesh={registerInteractiveMesh}
         />
       ))}
+
+      <AdventurePostprocessing />
     </>
   )
 }

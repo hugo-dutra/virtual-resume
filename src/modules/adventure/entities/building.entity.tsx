@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useRef } from 'react'
+import { useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import type { Mesh } from 'three'
+import * as THREE from 'three'
 import type { Building } from '../../../data/buildings.schema'
 
 type BuildingEntityProps = {
@@ -28,6 +30,7 @@ export function BuildingEntity({
 }: BuildingEntityProps) {
   const markerRef = useRef<Mesh | null>(null)
   const phase = useMemo(() => createDeterministicPhase(building.id), [building.id])
+  const roofTexture = useTexture('/assets/textures/roof-pattern.svg')
 
   const interactiveMeshRef = useCallback(
     (mesh: Mesh | null) => {
@@ -67,7 +70,18 @@ export function BuildingEntity({
 
       <mesh receiveShadow position={[0, building.size.y + 0.12, 0]}>
         <boxGeometry args={[building.size.x * 0.88, 0.24, building.size.z * 0.88]} />
-        <meshStandardMaterial color="#0f172a" roughness={0.8} />
+        <meshStandardMaterial
+          color="#0f172a"
+          map={roofTexture}
+          map-colorSpace={THREE.SRGBColorSpace}
+          map-repeat={[1.2, 1.2]}
+          map-wrapS={THREE.RepeatWrapping}
+          map-wrapT={THREE.RepeatWrapping}
+          roughness={0.8}
+          metalness={0.08}
+          emissive="#0f172a"
+          emissiveIntensity={isHovered ? 0.25 : 0.1}
+        />
       </mesh>
 
       <mesh ref={markerRef} position={[0, building.size.y + 0.55, 0]}>
