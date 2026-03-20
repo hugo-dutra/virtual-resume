@@ -9,7 +9,7 @@ type EducationSectionProps = {
 export function EducationSection({ education }: EducationSectionProps) {
   return (
     <section aria-labelledby="education-title" className="space-y-4">
-      <SectionTitle title="Educacao" subtitle="Formacao academica e especializacoes." />
+      <SectionTitle title="Education" subtitle="Academic background and specialization." />
       <div className="grid gap-4 md:grid-cols-2">
         {education.map((entry) => (
           <Card key={`${entry.institution}-${entry.degree}`} className="print-card">

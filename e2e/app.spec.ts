@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 test('landing to traditional navigation', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('heading', { name: /escolha seu modo de navegacao/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /choose your navigation mode/i })).toBeVisible()
   await page.locator('a[href="/traditional"]').first().click()
 
   await expect(page).toHaveURL(/\/traditional/)
@@ -24,7 +24,7 @@ test('traditional mode renders real resume sections', async ({ page }) => {
 test('adventure mode renders hud and controls', async ({ page }) => {
   await page.goto('/adventure')
 
-  await expect(page.getByRole('heading', { name: /mapa interativo 3d/i })).toBeVisible()
-  await expect(page.getByText(/wasd ou setas para mover/i)).toBeVisible()
-  await expect(page.getByText(/predios interativos/i)).toBeVisible()
+  await expect(page.getByRole('heading', { name: /3d interactive map/i })).toBeVisible()
+  await expect(page.getByText(/wasd or arrow keys to move/i)).toBeVisible()
+  await expect(page.getByText(/interactive buildings/i)).toBeVisible()
 })

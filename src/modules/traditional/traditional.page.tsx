@@ -26,10 +26,10 @@ export function TraditionalPage() {
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-6 py-12 print:max-w-none print:px-0 print:py-0">
       <header className="no-print flex items-center justify-between gap-4">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Modo Tradicional
+          Traditional Mode
         </p>
         <Link className="text-sm font-medium text-sky-700 hover:underline dark:text-sky-300" to="/">
-          Voltar
+          Back
         </Link>
       </header>
 
@@ -37,7 +37,7 @@ export function TraditionalPage() {
         person={profileData.person}
         onToggleTheme={toggleTheme}
         onPrint={handlePrint}
-        themeLabel={theme === 'dark' ? 'escuro' : 'claro'}
+        themeLabel={theme === 'dark' ? 'dark' : 'light'}
       />
 
       <ProfessionalSummarySection person={profileData.person} />
@@ -47,7 +47,7 @@ export function TraditionalPage() {
       <ProjectsSection projects={profileData.projects} />
 
       <footer className="pt-2 text-xs text-slate-500 dark:text-slate-400 print:mt-6 print:text-slate-700">
-        Atualizado em {profileData.updatedAt}
+        Updated on {profileData.updatedAt}
       </footer>
     </main>
   )

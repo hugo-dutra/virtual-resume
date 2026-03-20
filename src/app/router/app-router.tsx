@@ -25,7 +25,7 @@ function RouteLoader({ children }: RouteLoaderProps) {
     <Suspense
       fallback={
         <main className="flex min-h-screen items-center justify-center px-6">
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Carregando modulo...</p>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Loading module...</p>
         </main>
       }
     >

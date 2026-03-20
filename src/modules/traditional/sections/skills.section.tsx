@@ -9,7 +9,7 @@ type SkillsSectionProps = {
 export function SkillsSection({ skills }: SkillsSectionProps) {
   return (
     <section aria-labelledby="skills-title" className="space-y-4">
-      <SectionTitle title="Habilidades" subtitle="Competencias organizadas por area tecnica." />
+      <SectionTitle title="Skills" subtitle="Competencies organized by technical area." />
       <div className="grid gap-4 md:grid-cols-3">
         {skills.map((group) => (
           <Card key={group.category} className="print-card">

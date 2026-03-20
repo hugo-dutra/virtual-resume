@@ -16,7 +16,7 @@ export function useAdventurePhysics(buildings: Building[]): UseAdventurePhysicsR
   const world = useMemo(() => {
     const instance = new CANNON.World({ gravity: new CANNON.Vec3(0, 0, 0) })
     instance.broadphase = new CANNON.SAPBroadphase(instance)
-    instance.allowSleep = true
+    instance.allowSleep = false
     instance.defaultContactMaterial.friction = 0
     instance.defaultContactMaterial.restitution = 0
     return instance
@@ -34,6 +34,7 @@ export function useAdventurePhysics(buildings: Building[]): UseAdventurePhysicsR
       linearDamping: 0.72,
       angularDamping: 1,
       fixedRotation: true,
+      allowSleep: false,
     })
 
     playerBody.updateMassProperties()

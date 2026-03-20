@@ -9,7 +9,7 @@ type ProjectsSectionProps = {
 export function ProjectsSection({ projects }: ProjectsSectionProps) {
   return (
     <section aria-labelledby="projects-title" className="space-y-4">
-      <SectionTitle title="Projetos destacados" subtitle="Projetos com impacto de produto e engenharia." />
+      <SectionTitle title="Highlighted Projects" subtitle="Projects with product and engineering impact." />
       <div className="grid gap-4 md:grid-cols-2">
         {projects.map((project) => (
           <Card key={project.id} as="article" className="print-card">
@@ -30,12 +30,12 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
             <div className="mt-4 flex flex-wrap gap-3 text-sm font-medium text-sky-700 dark:text-sky-300 print:hidden">
               {project.link ? (
                 <a href={project.link} rel="noreferrer" target="_blank">
-                  Ver projeto
+                  View project
                 </a>
               ) : null}
               {project.repo ? (
                 <a href={project.repo} rel="noreferrer" target="_blank">
-                  Repositorio
+                  Repository
                 </a>
               ) : null}
             </div>

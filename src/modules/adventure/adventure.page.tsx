@@ -9,6 +9,7 @@ import { Button } from '../../shared/ui/button'
 import { Card } from '../../shared/ui/card'
 import { Modal } from '../../shared/ui/modal'
 import { AdventureCanvas } from './engine/adventure-canvas'
+import type { PlayerPosition } from './engine/adventure-scene'
 import { useAdventureAudio } from './hooks/use-adventure-audio'
 import { AdventureHud } from './ui/adventure-hud'
 import { AdventureLoadingOverlay } from './ui/adventure-loading-overlay'
@@ -24,6 +25,7 @@ export function AdventurePage() {
   const audioEnabled = useAppStore((state) => state.audioEnabled)
   const toggleAudio = useAppStore((state) => state.toggleAudio)
   const [activeBuildingCount, setActiveBuildingCount] = useState(buildingsData.buildings.length)
+  const [playerPosition, setPlayerPosition] = useState<PlayerPosition>({ x: 0, z: 0 })
 
   useAdventureAudio(audioEnabled)
 
@@ -49,25 +51,34 @@ export function AdventurePage() {
     setHoveredBuildingId(null)
   }, [closePopup, setHoveredBuildingId])
 
+  const handlePlayerPositionChange = useCallback((position: PlayerPosition) => {
+    setPlayerPosition((previousPosition) => {
+      const hasMovedEnough =
+        Math.abs(previousPosition.x - position.x) > 0.02 || Math.abs(previousPosition.z - position.z) > 0.02
+
+      return hasMovedEnough ? position : previousPosition
+    })
+  }, [])
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-6 py-10">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:text-sky-300">
-            Modo Adventure
+            Adventure Mode
           </p>
-          <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Mapa Interativo 3D</h1>
+          <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">3D Interactive Map</h1>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <Button variant={audioEnabled ? 'secondary' : 'ghost'} onClick={toggleAudio}>
-            Audio: {audioEnabled ? 'ligado' : 'desligado'}
+            Audio: {audioEnabled ? 'on' : 'off'}
           </Button>
           <Link
             className="inline-flex items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300"
             to="/"
           >
-            Voltar
+            Back
           </Link>
         </div>
       </header>
@@ -82,52 +93,57 @@ export function AdventurePage() {
             onEmptySelect={handleEmptySelect}
             onHoveredBuildingChange={setHoveredBuildingId}
             onActiveBuildingCountChange={setActiveBuildingCount}
+            onPlayerPositionChange={handlePlayerPositionChange}
           />
           <AdventureHud
             buildingCount={buildingsData.buildings.length}
             activeBuildingCount={activeBuildingCount}
             hoveredBuildingName={hoveredBuilding?.name ?? null}
             selectedBuildingName={selectedBuilding?.name ?? null}
+            hoveredBuildingId={hoveredBuildingId}
+            selectedBuildingId={selectedBuilding?.id ?? null}
+            playerPosition={playerPosition}
+            buildings={buildingsData.buildings}
           />
         </div>
       </Card>
 
       <Card>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Status da Fase 7</h2>
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Phase 7 Status</h2>
         <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-          Audio ambiente com Howler, loading screen com progresso real de assets, post-processing leve e renderizacao
-          por regiao para manter o mapa mais eficiente.
+          Ambient audio with Howler, loading screen with real asset progress, light post-processing, and regional
+          rendering for better map efficiency.
         </p>
       </Card>
 
       <Modal
         isOpen={Boolean(selectedExperience)}
-        title={selectedBuilding ? `${selectedBuilding.name} - ${selectedExperience?.company}` : 'Experiencia'}
+        title={selectedBuilding ? `${selectedBuilding.name} - ${selectedExperience?.company}` : 'Experience'}
         onClose={closePopup}
       >
         {selectedExperience && selectedBuilding ? (
           <div className="space-y-4">
             <div className="grid gap-2 sm:grid-cols-2">
               <p>
-                <strong>Cargo:</strong> {selectedExperience.role}
+                <strong>Role:</strong> {selectedExperience.role}
               </p>
               <p>
-                <strong>Periodo:</strong> {selectedExperience.period}
+                <strong>Period:</strong> {selectedExperience.period}
               </p>
               <p>
-                <strong>Local:</strong> {selectedExperience.location}
+                <strong>Location:</strong> {selectedExperience.location}
               </p>
               <p>
-                <strong>Zona no mapa:</strong> {selectedBuilding.zone}
+                <strong>Map zone:</strong> {selectedBuilding.zone}
               </p>
             </div>
 
             <p>
-              <strong>Resumo:</strong> {selectedExperience.summary}
+              <strong>Summary:</strong> {selectedExperience.summary}
             </p>
 
             <div>
-              <p className="mb-2 font-semibold text-slate-800 dark:text-slate-200">Stack principal</p>
+              <p className="mb-2 font-semibold text-slate-800 dark:text-slate-200">Primary stack</p>
               <div className="flex flex-wrap gap-2">
                 {selectedExperience.tech.map((tech) => (
                   <span
@@ -141,7 +157,7 @@ export function AdventurePage() {
             </div>
 
             <div>
-              <p className="mb-2 font-semibold text-slate-800 dark:text-slate-200">Destaques</p>
+              <p className="mb-2 font-semibold text-slate-800 dark:text-slate-200">Highlights</p>
               <ul className="list-disc space-y-1 pl-5">
                 {selectedExperience.highlights.map((highlight) => (
                   <li key={`${selectedExperience.id}-${highlight}`}>{highlight}</li>

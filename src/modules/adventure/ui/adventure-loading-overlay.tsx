@@ -20,12 +20,12 @@ export function AdventureLoadingOverlay() {
   }
 
   const percent = total > 0 ? Math.min(100, Math.max(0, Math.round(progress))) : 0
-  const label = total > 0 ? `${loaded}/${total}` : 'Preparando motor 3D'
+  const label = total > 0 ? `${loaded}/${total}` : 'Preparing 3D engine'
 
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm">
       <div className="w-[min(380px,90%)] rounded-xl border border-cyan-200/35 bg-slate-900/85 p-5 text-cyan-100 shadow-2xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Carregando Adventure</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Loading Adventure</p>
         <p className="mt-2 text-sm text-cyan-100">{label}</p>
 
         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-cyan-950/70">
@@ -36,7 +36,7 @@ export function AdventureLoadingOverlay() {
         </div>
 
         <p className="mt-2 text-right text-xs font-medium text-cyan-200">{percent}%</p>
-        <p className="mt-2 line-clamp-1 text-[11px] text-cyan-300/85">{item || 'Inicializando recursos...'}</p>
+        <p className="mt-2 line-clamp-1 text-[11px] text-cyan-300/85">{item || 'Initializing resources...'}</p>
       </div>
     </div>
   )

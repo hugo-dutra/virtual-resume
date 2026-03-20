@@ -87,19 +87,19 @@ export function LandingPage() {
 
           <motion.div variants={motionItem}>
             <SectionTitle
-              title="Escolha seu modo de navegacao"
-              subtitle="Agora com animacao de entrada, preview visual do Adventure e estrutura pronta para evoluir para o mapa 3D real."
+              title="Choose your navigation mode"
+              subtitle="Now with entrance animation, adventure visual preview, and a structure ready to evolve into the full 3D map."
             />
           </motion.div>
 
           <motion.p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base" variants={motionItem}>
-            O modo Tradicional prioriza leitura rapida para recrutadores. O modo Adventure cria uma experiencia
-            interativa memoravel com storytelling das experiencias profissionais.
+            Traditional mode prioritizes fast reading for recruiters. Adventure mode creates a memorable interactive
+            journey with storytelling around your professional experience.
           </motion.p>
 
           <motion.div className="flex flex-wrap gap-3" variants={motionItem}>
             <Button variant={audioEnabled ? 'secondary' : 'ghost'} onClick={toggleAudio}>
-              Audio ambiente: {audioEnabled ? 'ligado' : 'desligado'}
+              Ambient audio: {audioEnabled ? 'on' : 'off'}
             </Button>
             <Button
               className="bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800"
@@ -108,22 +108,22 @@ export function LandingPage() {
                 section?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              Ver modos
+              View modes
             </Button>
           </motion.div>
 
           <motion.div className="grid gap-4 sm:grid-cols-2" data-mode-grid variants={motionItem}>
             <ModeCard
               to="/traditional"
-              tag="Modo 01"
-              title="Tradicional"
-              description="Curriculo classico com foco em clareza, SEO e impressao."
+              tag="Mode 01"
+              title="Traditional"
+              description="Classic resume mode focused on clarity, SEO, and print output."
             />
             <ModeCard
               to="/adventure"
-              tag="Modo 02"
+              tag="Mode 02"
               title="Adventure"
-              description="Mapa interativo com progressao visual por experiencias."
+              description="Interactive map with visual progression across professional experiences."
             />
           </motion.div>
         </div>

@@ -33,8 +33,8 @@ export function ExperienceTimelineSection({ experiences }: ExperienceTimelineSec
   return (
     <section aria-labelledby="experience-title" className="space-y-4">
       <SectionTitle
-        title="Experiencias"
-        subtitle="Linha do tempo com os principais resultados por empresa."
+        title="Experience"
+        subtitle="Timeline with key outcomes delivered at each company."
       />
 
       <motion.ol

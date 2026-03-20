@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import type { Building } from '../../../data/buildings.schema'
-import { AdventureScene } from './adventure-scene'
+import { AdventureScene, type PlayerPosition } from './adventure-scene'
 
 type AdventureCanvasProps = {
   hoveredBuildingId: string | null
@@ -11,6 +11,7 @@ type AdventureCanvasProps = {
   onEmptySelect: () => void
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
+  onPlayerPositionChange: (position: PlayerPosition) => void
 }
 
 export function AdventureCanvas({
@@ -20,6 +21,7 @@ export function AdventureCanvas({
   onEmptySelect,
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
+  onPlayerPositionChange,
 }: AdventureCanvasProps) {
   return (
     <div className="h-full w-full">
@@ -42,6 +44,7 @@ export function AdventureCanvas({
             onEmptySelect={onEmptySelect}
             onHoveredBuildingChange={onHoveredBuildingChange}
             onActiveBuildingCountChange={onActiveBuildingCountChange}
+            onPlayerPositionChange={onPlayerPositionChange}
           />
         </Suspense>
       </Canvas>

@@ -19,6 +19,11 @@ import {
   REGION_SIZE,
 } from '../world/world.constants'
 
+export type PlayerPosition = {
+  x: number
+  z: number
+}
+
 type AdventureSceneProps = {
   hoveredBuildingId: string | null
   selectedBuildingId: string | null
@@ -26,6 +31,7 @@ type AdventureSceneProps = {
   onEmptySelect: () => void
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
+  onPlayerPositionChange: (position: PlayerPosition) => void
 }
 
 function getRegionCoordinate(position: number) {
@@ -39,6 +45,7 @@ export function AdventureScene({
   onEmptySelect,
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
+  onPlayerPositionChange,
 }: AdventureSceneProps) {
   const { camera, gl, pointer, raycaster } = useThree()
   const controlsRef = useKeyboardControls()
@@ -52,6 +59,7 @@ export function AdventureScene({
   const currentHoveredRef = useRef<string | null>(null)
   const interactiveMeshesRef = useRef<Record<string, Mesh>>({})
   const activeRegionRef = useRef(activeRegion)
+  const hudUpdateAccumulatorRef = useRef(0)
 
   const clickPointer = useMemo(() => new THREE.Vector2(), [])
   const cameraOffset = useMemo(
@@ -197,6 +205,7 @@ export function AdventureScene({
     if (isMoving) {
       const speed = controls.sprint ? PLAYER_BASE_SPEED * 1.35 : PLAYER_BASE_SPEED
       movementVector.normalize().multiplyScalar(speed)
+      playerBody.wakeUp()
     } else {
       movementVector.set(0, 0, 0)
     }
@@ -222,6 +231,15 @@ export function AdventureScene({
     if (nextRegion.x !== activeRegionRef.current.x || nextRegion.z !== activeRegionRef.current.z) {
       activeRegionRef.current = nextRegion
       setActiveRegion(nextRegion)
+    }
+
+    hudUpdateAccumulatorRef.current += delta
+    if (hudUpdateAccumulatorRef.current >= 1 / 15) {
+      hudUpdateAccumulatorRef.current = 0
+      onPlayerPositionChange({
+        x: playerBody.position.x,
+        z: playerBody.position.z,
+      })
     }
 
     if (pointerInsideRef.current) {

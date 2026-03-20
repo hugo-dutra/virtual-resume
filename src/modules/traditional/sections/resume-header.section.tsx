@@ -29,10 +29,10 @@ export function ResumeHeaderSection({ person, onToggleTheme, onPrint, themeLabel
 
           <div className="flex flex-wrap gap-2 print:hidden">
             <Button variant="ghost" onClick={onToggleTheme}>
-              Tema: {themeLabel}
+              Theme: {themeLabel}
             </Button>
             <Button variant="secondary" onClick={onPrint}>
-              Baixar PDF
+              Download PDF
             </Button>
           </div>
         </div>
