@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "validate:data": "node scripts/validate-data.mjs",
     "prepare": "husky"
   },
   "dependencies": {

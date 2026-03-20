@@ -1,0 +1,44 @@
+{
+  "updatedAt": "2026-03-20",
+  "experiences": [
+    {
+      "id": "empresa-alpha",
+      "company": "Empresa Alpha",
+      "role": "Senior Frontend Developer",
+      "period": "Jan 2020 - Dez 2022",
+      "location": "Sao Paulo, BR",
+      "summary": "Lideranca tecnica em redesign de plataforma web com foco em performance e UX.",
+      "tech": ["React", "TypeScript", "AWS", "Node.js"],
+      "highlights": [
+        "Reducao de 40% no tempo medio de carregamento",
+        "Mentoria tecnica para time de 5 desenvolvedores"
+      ]
+    },
+    {
+      "id": "startup-beta",
+      "company": "Startup Beta",
+      "role": "Frontend Engineer",
+      "period": "Fev 2018 - Dez 2019",
+      "location": "Remoto",
+      "summary": "Construcao de interface de produto SaaS em ambiente de alta iteracao.",
+      "tech": ["Vue", "TypeScript", "GraphQL"],
+      "highlights": [
+        "Implementacao de design system reutilizavel",
+        "Aumento de 22% na conversao da trial"
+      ]
+    },
+    {
+      "id": "consultoria-gamma",
+      "company": "Consultoria Gamma",
+      "role": "Full Stack Developer",
+      "period": "Jun 2015 - Jan 2018",
+      "location": "Campinas, BR",
+      "summary": "Entrega de projetos web corporativos ponta a ponta para diferentes setores.",
+      "tech": ["React", "Node.js", "PostgreSQL"],
+      "highlights": [
+        "Entrega de 12 projetos sem atraso critico",
+        "Padronizacao de pipeline de deploy para clientes"
+      ]
+    }
+  ]
+}
