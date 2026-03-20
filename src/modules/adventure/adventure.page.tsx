@@ -17,8 +17,8 @@ import { AdventureHud } from './ui/adventure-hud'
 import { AdventureLoadingOverlay } from './ui/adventure-loading-overlay'
 import { PLAYER_RADIUS } from './world/world.constants'
 
-const PROXIMITY_AUTO_OPEN_DISTANCE = 1
-const PROXIMITY_AUTO_CLOSE_DISTANCE = 1.2
+const PROXIMITY_AUTO_OPEN_DISTANCE = 4
+const PROXIMITY_AUTO_CLOSE_DISTANCE = 6
 
 function getPlayerToBoxDistance(
   position: PlayerPosition,
