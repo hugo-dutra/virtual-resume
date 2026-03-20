@@ -3,10 +3,20 @@ import type { Building } from '../../../data/buildings.schema'
 import { AdventureScene } from './adventure-scene'
 
 type AdventureCanvasProps = {
+  hoveredBuildingId: string | null
+  selectedBuildingId: string | null
   onBuildingSelect: (building: Building) => void
+  onEmptySelect: () => void
+  onHoveredBuildingChange: (buildingId: string | null) => void
 }
 
-export function AdventureCanvas({ onBuildingSelect }: AdventureCanvasProps) {
+export function AdventureCanvas({
+  hoveredBuildingId,
+  selectedBuildingId,
+  onBuildingSelect,
+  onEmptySelect,
+  onHoveredBuildingChange,
+}: AdventureCanvasProps) {
   return (
     <div className="h-full w-full">
       <Canvas
@@ -15,7 +25,13 @@ export function AdventureCanvas({ onBuildingSelect }: AdventureCanvasProps) {
         gl={{ antialias: true }}
         shadows
       >
-        <AdventureScene onBuildingSelect={onBuildingSelect} />
+        <AdventureScene
+          hoveredBuildingId={hoveredBuildingId}
+          selectedBuildingId={selectedBuildingId}
+          onBuildingSelect={onBuildingSelect}
+          onEmptySelect={onEmptySelect}
+          onHoveredBuildingChange={onHoveredBuildingChange}
+        />
       </Canvas>
     </div>
   )

@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
-import { useFrame, type ThreeEvent } from '@react-three/fiber'
+import { useCallback, useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import type { Mesh } from 'three'
 import type { Building } from '../../../data/buildings.schema'
 
 type BuildingEntityProps = {
   building: Building
-  onSelect: (building: Building) => void
+  isHovered: boolean
+  isSelected: boolean
+  registerInteractiveMesh: (buildingId: string, mesh: Mesh | null) => void
 }
 
 function createDeterministicPhase(id: string) {
@@ -18,41 +20,49 @@ function createDeterministicPhase(id: string) {
   return (hash / 997) * Math.PI * 2
 }
 
-export function BuildingEntity({ building, onSelect }: BuildingEntityProps) {
-  const [hovered, setHovered] = useState(false)
+export function BuildingEntity({
+  building,
+  isHovered,
+  isSelected,
+  registerInteractiveMesh,
+}: BuildingEntityProps) {
   const markerRef = useRef<Mesh | null>(null)
   const phase = useMemo(() => createDeterministicPhase(building.id), [building.id])
+
+  const interactiveMeshRef = useCallback(
+    (mesh: Mesh | null) => {
+      registerInteractiveMesh(building.id, mesh)
+    },
+    [building.id, registerInteractiveMesh],
+  )
 
   useFrame(({ clock }) => {
     if (!markerRef.current) {
       return
     }
 
-    markerRef.current.position.y = building.size.y + 0.55 + Math.sin(clock.elapsedTime * 2 + phase) * 0.14
+    const activeMultiplier = isHovered || isSelected ? 0.2 : 0
+    markerRef.current.position.y =
+      building.size.y + 0.55 + Math.sin(clock.elapsedTime * 2 + phase) * (0.14 + activeMultiplier)
   })
 
-  const handleSelect = (event: ThreeEvent<MouseEvent>) => {
-    event.stopPropagation()
-    onSelect(building)
-  }
+  const isActive = isHovered || isSelected
 
   return (
     <group position={[building.position.x, 0, building.position.z]}>
-      <mesh
-        castShadow
-        receiveShadow
-        position={[0, building.size.y / 2, 0]}
-        onClick={handleSelect}
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
-      >
+      <mesh ref={interactiveMeshRef} castShadow receiveShadow position={[0, building.size.y / 2, 0]} userData={{ buildingId: building.id }}>
         <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
         <meshStandardMaterial
           color={building.color}
-          emissive={hovered ? '#e2e8f0' : '#020617'}
-          emissiveIntensity={hovered ? 0.24 : 0.06}
+          emissive={isActive ? '#e2e8f0' : '#020617'}
+          emissiveIntensity={isHovered ? 0.36 : isSelected ? 0.24 : 0.06}
           roughness={0.35}
         />
+      </mesh>
+
+      <mesh position={[0, building.size.y / 2, 0]} scale={[1.05, 1.05, 1.05]} visible={isActive}>
+        <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
+        <meshBasicMaterial color={isHovered ? '#bae6fd' : '#67e8f9'} opacity={0.5} transparent wireframe />
       </mesh>
 
       <mesh receiveShadow position={[0, building.size.y + 0.12, 0]}>
@@ -61,8 +71,8 @@ export function BuildingEntity({ building, onSelect }: BuildingEntityProps) {
       </mesh>
 
       <mesh ref={markerRef} position={[0, building.size.y + 0.55, 0]}>
-        <sphereGeometry args={[0.14, 12, 12]} />
-        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={1.2} />
+        <sphereGeometry args={[isHovered || isSelected ? 0.19 : 0.14, 14, 14]} />
+        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={isHovered || isSelected ? 2 : 1.2} />
       </mesh>
     </group>
   )

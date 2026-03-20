@@ -9,7 +9,9 @@ type AppStore = {
   theme: ThemeMode
   audioEnabled: boolean
   activeExperienceId: string | null
+  hoveredBuildingId: string | null
   setActiveMode: (mode: AppMode) => void
+  setHoveredBuildingId: (buildingId: string | null) => void
   toggleTheme: () => void
   toggleAudio: () => void
   openPopup: (experienceId: string) => void
@@ -23,7 +25,9 @@ export const useAppStore = create<AppStore>()(
       theme: 'light',
       audioEnabled: false,
       activeExperienceId: null,
+      hoveredBuildingId: null,
       setActiveMode: (mode) => set({ activeMode: mode }),
+      setHoveredBuildingId: (buildingId) => set({ hoveredBuildingId: buildingId }),
       toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
       toggleAudio: () => set((state) => ({ audioEnabled: !state.audioEnabled })),
       openPopup: (experienceId) => set({ activeExperienceId: experienceId }),
