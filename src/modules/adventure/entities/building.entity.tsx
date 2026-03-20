@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback } from 'react'
 import { useTexture } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
 import type { Mesh } from 'three'
 import * as THREE from 'three'
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
@@ -16,16 +15,6 @@ type BuildingEntityProps = {
   registerInteractiveMesh: (buildingId: string, mesh: Mesh | null) => void
 }
 
-function createDeterministicPhase(id: string) {
-  let hash = 0
-
-  for (let index = 0; index < id.length; index += 1) {
-    hash = (hash * 31 + id.charCodeAt(index)) % 997
-  }
-
-  return (hash / 997) * Math.PI * 2
-}
-
 export function BuildingEntity({
   building,
   asset,
@@ -33,8 +22,6 @@ export function BuildingEntity({
   isSelected,
   registerInteractiveMesh,
 }: BuildingEntityProps) {
-  const markerRef = useRef<Mesh | null>(null)
-  const phase = useMemo(() => createDeterministicPhase(building.id), [building.id])
   const roofTexture = useTexture('/assets/textures/roof-pattern.svg')
   const modelUrl = getAssetModelUrl(asset)
   const { scene: modelScene } = useModelAsset(modelUrl)
@@ -46,16 +33,6 @@ export function BuildingEntity({
     },
     [building.id, registerInteractiveMesh],
   )
-
-  useFrame(({ clock }) => {
-    if (!markerRef.current) {
-      return
-    }
-
-    const activeMultiplier = isHovered || isSelected ? 0.2 : 0
-    markerRef.current.position.y =
-      building.size.y + 0.55 + Math.sin(clock.elapsedTime * 2 + phase) * (0.14 + activeMultiplier)
-  })
 
   const isActive = isHovered || isSelected
 
@@ -102,11 +79,6 @@ export function BuildingEntity({
           />
         </mesh>
       ) : null}
-
-      <mesh ref={markerRef} position={[0, building.size.y + 0.55, 0]}>
-        <sphereGeometry args={[isHovered || isSelected ? 0.19 : 0.14, 14, 14]} />
-        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={isHovered || isSelected ? 2 : 1.2} />
-      </mesh>
     </group>
   )
 }

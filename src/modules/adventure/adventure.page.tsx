@@ -19,6 +19,19 @@ import { PLAYER_RADIUS } from './world/world.constants'
 
 const PROXIMITY_AUTO_OPEN_DISTANCE = 4
 const PROXIMITY_AUTO_CLOSE_DISTANCE = 6
+const PROXIMITY_REOPEN_DELTA = 0.03
+
+type DismissedTarget =
+  | {
+      kind: 'building'
+      id: string
+      lastDistance: number
+    }
+  | {
+      kind: 'education'
+      id: string
+      lastDistance: number
+    }
 
 function getPlayerToBoxDistance(
   position: PlayerPosition,
@@ -69,10 +82,16 @@ export function AdventurePage() {
   const selectedEducationPlace = educationPlacesData.places.find((place) => place.id === selectedEducationPlaceId)
   const allBuildings = useMemo(() => buildingsData.buildings, [])
   const allEducationPlaces = useMemo(() => educationPlacesData.places, [])
+  const buildingById = useMemo(() => new Map(allBuildings.map((building) => [building.id, building])), [allBuildings])
+  const educationPlaceById = useMemo(
+    () => new Map(allEducationPlaces.map((place) => [place.id, place])),
+    [allEducationPlaces],
+  )
   const activeExperienceIdRef = useRef(activeExperienceId)
   const selectedEducationPlaceIdRef = useRef(selectedEducationPlaceId)
   const selectedBuildingRef = useRef<Building | undefined>(selectedBuilding)
   const selectedEducationPlaceRef = useRef<EducationPlace | undefined>(selectedEducationPlace)
+  const dismissedTargetRef = useRef<DismissedTarget | null>(null)
 
   useEffect(() => {
     activeExperienceIdRef.current = activeExperienceId
@@ -83,6 +102,7 @@ export function AdventurePage() {
 
   const handleBuildingSelect = useCallback(
     (building: Building) => {
+      dismissedTargetRef.current = null
       setSelectedEducationPlaceId(null)
       openPopup(building.experienceId)
     },
@@ -91,6 +111,7 @@ export function AdventurePage() {
 
   const handleEducationSelect = useCallback(
     (place: EducationPlace) => {
+      dismissedTargetRef.current = null
       closePopup()
       setSelectedEducationPlaceId(place.id)
       setHoveredBuildingId(null)
@@ -98,10 +119,37 @@ export function AdventurePage() {
     [closePopup, setHoveredBuildingId],
   )
 
-  const handleCloseModal = useCallback(() => {
+  const clearActiveSelection = useCallback(() => {
     closePopup()
     setSelectedEducationPlaceId(null)
   }, [closePopup])
+
+  const handleCloseModal = useCallback(() => {
+    const currentSelectedBuilding = selectedBuildingRef.current
+    const currentSelectedEducationPlace = selectedEducationPlaceRef.current
+
+    if (currentSelectedBuilding) {
+      dismissedTargetRef.current = {
+        kind: 'building',
+        id: currentSelectedBuilding.id,
+        lastDistance: getPlayerToBoxDistance(playerPosition, currentSelectedBuilding),
+      }
+    } else if (currentSelectedEducationPlace) {
+      dismissedTargetRef.current = {
+        kind: 'education',
+        id: currentSelectedEducationPlace.id,
+        lastDistance: getPlayerToBoxDistance(playerPosition, currentSelectedEducationPlace),
+      }
+    } else {
+      dismissedTargetRef.current = null
+    }
+
+    activeExperienceIdRef.current = null
+    selectedEducationPlaceIdRef.current = null
+    selectedBuildingRef.current = undefined
+    selectedEducationPlaceRef.current = undefined
+    clearActiveSelection()
+  }, [clearActiveSelection, playerPosition])
 
   const handleEducationMarkerSelect = useCallback(
     (placeId: string) => {
@@ -155,6 +203,32 @@ export function AdventurePage() {
       const currentSelectedEducationPlaceId = selectedEducationPlaceIdRef.current
       const currentSelectedBuilding = selectedBuildingRef.current
       const currentSelectedEducationPlace = selectedEducationPlaceRef.current
+      const dismissedTarget = dismissedTargetRef.current
+      let dismissedTargetMovedCloser = false
+
+      if (dismissedTarget) {
+        const previousDistance = dismissedTarget.lastDistance
+
+        if (dismissedTarget.kind === 'building') {
+          const dismissedBuilding = buildingById.get(dismissedTarget.id)
+          if (!dismissedBuilding) {
+            dismissedTargetRef.current = null
+          } else {
+            const currentDistance = getPlayerToBoxDistance(position, dismissedBuilding)
+            dismissedTargetMovedCloser = currentDistance < previousDistance - PROXIMITY_REOPEN_DELTA
+            dismissedTarget.lastDistance = currentDistance
+          }
+        } else {
+          const dismissedEducationPlace = educationPlaceById.get(dismissedTarget.id)
+          if (!dismissedEducationPlace) {
+            dismissedTargetRef.current = null
+          } else {
+            const currentDistance = getPlayerToBoxDistance(position, dismissedEducationPlace)
+            dismissedTargetMovedCloser = currentDistance < previousDistance - PROXIMITY_REOPEN_DELTA
+            dismissedTarget.lastDistance = currentDistance
+          }
+        }
+      }
 
       const shouldOpenNearestBuilding =
         nearestBuilding !== null &&
@@ -162,6 +236,16 @@ export function AdventurePage() {
         nearestBuildingDistance <= nearestEducationDistance
 
       if (shouldOpenNearestBuilding && nearestBuilding) {
+        const isDismissedBuilding =
+          dismissedTargetRef.current?.kind === 'building' && dismissedTargetRef.current.id === nearestBuilding.id
+        if (isDismissedBuilding && !dismissedTargetMovedCloser) {
+          return
+        }
+
+        if (isDismissedBuilding) {
+          dismissedTargetRef.current = null
+        }
+
         if (
           currentActiveExperienceId !== nearestBuilding.experienceId ||
           currentSelectedEducationPlaceId !== null
@@ -181,6 +265,17 @@ export function AdventurePage() {
         nearestEducationDistance < nearestBuildingDistance
 
       if (shouldOpenNearestEducation && nearestEducationPlace) {
+        const isDismissedEducation =
+          dismissedTargetRef.current?.kind === 'education' &&
+          dismissedTargetRef.current.id === nearestEducationPlace.id
+        if (isDismissedEducation && !dismissedTargetMovedCloser) {
+          return
+        }
+
+        if (isDismissedEducation) {
+          dismissedTargetRef.current = null
+        }
+
         if (
           currentSelectedEducationPlaceId !== nearestEducationPlace.id ||
           currentActiveExperienceId !== null
@@ -197,11 +292,12 @@ export function AdventurePage() {
       if (currentSelectedBuilding) {
         const distanceToSelectedBuilding = getPlayerToBoxDistance(position, currentSelectedBuilding)
         if (distanceToSelectedBuilding > PROXIMITY_AUTO_CLOSE_DISTANCE) {
+          dismissedTargetRef.current = null
           activeExperienceIdRef.current = null
           selectedEducationPlaceIdRef.current = null
           selectedBuildingRef.current = undefined
           selectedEducationPlaceRef.current = undefined
-          handleCloseModal()
+          clearActiveSelection()
           setHoveredBuildingId(null)
         }
         return
@@ -210,16 +306,26 @@ export function AdventurePage() {
       if (currentSelectedEducationPlace) {
         const distanceToSelectedEducation = getPlayerToBoxDistance(position, currentSelectedEducationPlace)
         if (distanceToSelectedEducation > PROXIMITY_AUTO_CLOSE_DISTANCE) {
+          dismissedTargetRef.current = null
           activeExperienceIdRef.current = null
           selectedEducationPlaceIdRef.current = null
           selectedBuildingRef.current = undefined
           selectedEducationPlaceRef.current = undefined
-          handleCloseModal()
+          clearActiveSelection()
           setHoveredBuildingId(null)
         }
       }
     },
-    [allBuildings, allEducationPlaces, handleBuildingSelect, handleCloseModal, handleEducationSelect, setHoveredBuildingId],
+    [
+      allBuildings,
+      allEducationPlaces,
+      buildingById,
+      clearActiveSelection,
+      educationPlaceById,
+      handleBuildingSelect,
+      handleEducationSelect,
+      setHoveredBuildingId,
+    ],
   )
 
   const handleActiveBuildingCountChange = useCallback(() => {
@@ -280,12 +386,16 @@ export function AdventurePage() {
         <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
           <p>
             This interactive map is a playful way to explore my professional and academic journey. Walk around, find
-            landmarks, and click them to open the story behind each experience.
+            landmarks, and get close to reveal each story.
           </p>
           <p>
             Use <strong>WASD</strong> (or arrow keys) to move, hold <strong>Shift</strong> to sprint, and use the
-            <strong> mouse scroll</strong> to zoom the camera from close view to far overview. Click buildings for
-            work experiences and diamond landmarks for academic milestones.
+            <strong> mouse scroll</strong> to zoom the camera from close view to far overview.
+          </p>
+          <p>
+            <strong>How proximity works:</strong> info panels open automatically when you get close and close
+            automatically when you move away. If you dismiss a panel while near a place (click outside or press
+            <strong> Esc</strong>), it stays closed until you approach that place again.
           </p>
         </div>
       </Card>

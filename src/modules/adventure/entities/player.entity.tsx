@@ -184,10 +184,6 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
       {resolvedModelScene ? (
         <>
           <primitive object={resolvedModelScene} position={finalModelPosition} rotation={rotation} scale={finalModelScale} />
-          <mesh position={[0, 0.12, 0]}>
-            <sphereGeometry args={[0.08, 12, 12]} />
-            <meshStandardMaterial color="#22d3ee" emissive="#0891b2" emissiveIntensity={1.15} />
-          </mesh>
         </>
       ) : (
         <>
