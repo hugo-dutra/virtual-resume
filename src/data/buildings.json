@@ -27,6 +27,33 @@
       "size": { "x": 5.2, "y": 3.8, "z": 5.2 },
       "color": "#14b8a6",
       "zone": "Public Services Hills"
+    },
+    {
+      "id": "building-infinity",
+      "name": "Infinity Campus",
+      "experienceId": "infinity",
+      "position": { "x": -14, "z": 8 },
+      "size": { "x": 3.8, "y": 3.2, "z": 3.8 },
+      "color": "#f43f5e",
+      "zone": "Healthcare Arc"
+    },
+    {
+      "id": "building-physics-teacher-seedf",
+      "name": "Teacher Pavilion",
+      "experienceId": "physics-teacher-seedf",
+      "position": { "x": 13, "z": 6 },
+      "size": { "x": 4.2, "y": 2.8, "z": 4.2 },
+      "color": "#f59e0b",
+      "zone": "Learning District"
+    },
+    {
+      "id": "building-autotrac",
+      "name": "Autotrac Node",
+      "experienceId": "autotrac",
+      "position": { "x": -13, "z": -13 },
+      "size": { "x": 3.6, "y": 3.1, "z": 3.6 },
+      "color": "#06b6d4",
+      "zone": "Telecom Valley"
     }
   ]
 }

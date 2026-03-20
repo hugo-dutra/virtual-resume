@@ -1,0 +1,25 @@
+{
+  "updatedAt": "2026-03-20",
+  "places": [
+    {
+      "id": "education-place-etb",
+      "educationId": "etb",
+      "name": "ETB Landmark",
+      "institution": "Escola Tecnica de Brasilia (ETB)",
+      "position": { "x": 14, "z": -12 },
+      "size": { "x": 3.4, "y": 2.8, "z": 3.4 },
+      "color": "#f97316",
+      "zone": "Foundations Lane"
+    },
+    {
+      "id": "education-place-ucb",
+      "educationId": "ucb",
+      "name": "UCB Landmark",
+      "institution": "Catholic University of Brasilia (UCB)",
+      "position": { "x": -3, "z": 15 },
+      "size": { "x": 4.2, "y": 3.2, "z": 4.2 },
+      "color": "#a855f7",
+      "zone": "Academic Heights"
+    }
+  ]
+}

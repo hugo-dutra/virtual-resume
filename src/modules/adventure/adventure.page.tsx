@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { buildingsData } from '../../data/buildings'
 import type { Building } from '../../data/buildings.schema'
+import { educationPlacesData } from '../../data/education-places'
 import { experiencesData } from '../../data/experiences'
 import { useAppMode } from '../../shared/hooks/use-app-mode'
 import { useAppStore } from '../../shared/stores/use-app-store'
@@ -104,15 +105,16 @@ export function AdventurePage() {
             selectedBuildingId={selectedBuilding?.id ?? null}
             playerPosition={playerPosition}
             buildings={buildingsData.buildings}
+            educationPlaces={educationPlacesData.places}
           />
         </div>
       </Card>
 
       <Card>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Phase 7 Status</h2>
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Phase 9 Status</h2>
         <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-          Ambient audio with Howler, loading screen with real asset progress, light post-processing, and regional
-          rendering for better map efficiency.
+          Asset manifest enabled for buildings, study landmarks and player avatar. Models are read from
+          <code> /public/assets/models </code> and fallback to default geometry when a file is missing.
         </p>
       </Card>
 

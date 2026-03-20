@@ -3,10 +3,14 @@ import { useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import type { Mesh } from 'three'
 import * as THREE from 'three'
+import type { AdventureAsset } from '../../../data/adventure-assets.schema'
 import type { Building } from '../../../data/buildings.schema'
+import { useModelAsset } from '../hooks/use-model-asset'
+import { getAssetModelUrl, resolveAssetTransform } from '../utils/adventure-asset-resolver'
 
 type BuildingEntityProps = {
   building: Building
+  asset: AdventureAsset | null
   isHovered: boolean
   isSelected: boolean
   registerInteractiveMesh: (buildingId: string, mesh: Mesh | null) => void
@@ -24,6 +28,7 @@ function createDeterministicPhase(id: string) {
 
 export function BuildingEntity({
   building,
+  asset,
   isHovered,
   isSelected,
   registerInteractiveMesh,
@@ -31,6 +36,9 @@ export function BuildingEntity({
   const markerRef = useRef<Mesh | null>(null)
   const phase = useMemo(() => createDeterministicPhase(building.id), [building.id])
   const roofTexture = useTexture('/assets/textures/roof-pattern.svg')
+  const modelUrl = getAssetModelUrl(asset)
+  const { scene: modelScene } = useModelAsset(modelUrl)
+  const { offset, rotation, scale } = resolveAssetTransform(asset)
 
   const interactiveMeshRef = useCallback(
     (mesh: Mesh | null) => {
@@ -53,36 +61,47 @@ export function BuildingEntity({
 
   return (
     <group position={[building.position.x, 0, building.position.z]}>
-      <mesh ref={interactiveMeshRef} castShadow receiveShadow position={[0, building.size.y / 2, 0]} userData={{ buildingId: building.id }}>
+      <mesh ref={interactiveMeshRef} position={[0, building.size.y / 2, 0]} userData={{ buildingId: building.id }}>
         <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
-        <meshStandardMaterial
-          color={building.color}
-          emissive={isActive ? '#e2e8f0' : '#020617'}
-          emissiveIntensity={isHovered ? 0.36 : isSelected ? 0.24 : 0.06}
-          roughness={0.35}
-        />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
+
+      {modelScene ? (
+        <primitive object={modelScene} position={offset} rotation={rotation} scale={scale} />
+      ) : (
+        <mesh castShadow receiveShadow position={[0, building.size.y / 2, 0]}>
+          <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
+          <meshStandardMaterial
+            color={building.color}
+            emissive={isActive ? '#e2e8f0' : '#020617'}
+            emissiveIntensity={isHovered ? 0.36 : isSelected ? 0.24 : 0.06}
+            roughness={0.35}
+          />
+        </mesh>
+      )}
 
       <mesh position={[0, building.size.y / 2, 0]} scale={[1.05, 1.05, 1.05]} visible={isActive}>
         <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
         <meshBasicMaterial color={isHovered ? '#bae6fd' : '#67e8f9'} opacity={0.5} transparent wireframe />
       </mesh>
 
-      <mesh receiveShadow position={[0, building.size.y + 0.12, 0]}>
-        <boxGeometry args={[building.size.x * 0.88, 0.24, building.size.z * 0.88]} />
-        <meshStandardMaterial
-          color="#0f172a"
-          map={roofTexture}
-          map-colorSpace={THREE.SRGBColorSpace}
-          map-repeat={[1.2, 1.2]}
-          map-wrapS={THREE.RepeatWrapping}
-          map-wrapT={THREE.RepeatWrapping}
-          roughness={0.8}
-          metalness={0.08}
-          emissive="#0f172a"
-          emissiveIntensity={isHovered ? 0.25 : 0.1}
-        />
-      </mesh>
+      {!modelScene ? (
+        <mesh receiveShadow position={[0, building.size.y + 0.12, 0]}>
+          <boxGeometry args={[building.size.x * 0.88, 0.24, building.size.z * 0.88]} />
+          <meshStandardMaterial
+            color="#0f172a"
+            map={roofTexture}
+            map-colorSpace={THREE.SRGBColorSpace}
+            map-repeat={[1.2, 1.2]}
+            map-wrapS={THREE.RepeatWrapping}
+            map-wrapT={THREE.RepeatWrapping}
+            roughness={0.8}
+            metalness={0.08}
+            emissive="#0f172a"
+            emissiveIntensity={isHovered ? 0.25 : 0.1}
+          />
+        </mesh>
+      ) : null}
 
       <mesh ref={markerRef} position={[0, building.size.y + 0.55, 0]}>
         <sphereGeometry args={[isHovered || isSelected ? 0.19 : 0.14, 14, 14]} />

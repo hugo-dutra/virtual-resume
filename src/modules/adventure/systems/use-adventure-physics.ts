@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, type MutableRefObject } from 'react'
 import * as CANNON from 'cannon-es'
-import type { Building } from '../../../data/buildings.schema'
 import { MAP_SIZE, PLAYER_RADIUS } from '../world/world.constants'
 
 const HALF_MAP_SIZE = MAP_SIZE / 2
@@ -12,7 +11,19 @@ type UseAdventurePhysicsResult = {
   playerBodyRef: MutableRefObject<CANNON.Body | null>
 }
 
-export function useAdventurePhysics(buildings: Building[]): UseAdventurePhysicsResult {
+type ObstacleSpec = {
+  position: {
+    x: number
+    z: number
+  }
+  size: {
+    x: number
+    y: number
+    z: number
+  }
+}
+
+export function useAdventurePhysics(obstacles: ObstacleSpec[]): UseAdventurePhysicsResult {
   const world = useMemo(() => {
     const instance = new CANNON.World({ gravity: new CANNON.Vec3(0, 0, 0) })
     instance.broadphase = new CANNON.SAPBroadphase(instance)
@@ -42,11 +53,11 @@ export function useAdventurePhysics(buildings: Building[]): UseAdventurePhysicsR
     playerBodyRef.current = playerBody
     bodies.push(playerBody)
 
-    for (const building of buildings) {
+    for (const obstacle of obstacles) {
       const body = new CANNON.Body({
         mass: 0,
-        shape: new CANNON.Box(new CANNON.Vec3(building.size.x / 2, building.size.y / 2, building.size.z / 2)),
-        position: new CANNON.Vec3(building.position.x, building.size.y / 2, building.position.z),
+        shape: new CANNON.Box(new CANNON.Vec3(obstacle.size.x / 2, obstacle.size.y / 2, obstacle.size.z / 2)),
+        position: new CANNON.Vec3(obstacle.position.x, obstacle.size.y / 2, obstacle.position.z),
       })
 
       world.addBody(body)
@@ -77,7 +88,7 @@ export function useAdventurePhysics(buildings: Building[]): UseAdventurePhysicsR
       }
       playerBodyRef.current = null
     }
-  }, [buildings, world])
+  }, [obstacles, world])
 
   return { world, playerBodyRef }
 }

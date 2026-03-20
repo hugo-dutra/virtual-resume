@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 test('landing to traditional navigation', async ({ page }) => {
   await page.goto('/')
 
+  await expect(page.locator('html')).toHaveClass(/theme-dark/)
   await expect(page.getByRole('heading', { name: /choose your navigation mode/i })).toBeVisible()
   await page.locator('a[href="/traditional"]').first().click()
 

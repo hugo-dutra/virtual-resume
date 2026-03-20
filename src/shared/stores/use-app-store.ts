@@ -22,7 +22,7 @@ export const useAppStore = create<AppStore>()(
   persist(
     (set) => ({
       activeMode: 'landing',
-      theme: 'light',
+      theme: 'dark',
       audioEnabled: false,
       activeExperienceId: null,
       hoveredBuildingId: null,

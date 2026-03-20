@@ -2,9 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { Group, Mesh } from 'three'
 import * as THREE from 'three'
+import { adventureAssetsData } from '../../../data/adventure-assets'
+import type { AdventureAsset } from '../../../data/adventure-assets.schema'
 import { buildingsData } from '../../../data/buildings'
 import type { Building } from '../../../data/buildings.schema'
+import { educationPlacesData } from '../../../data/education-places'
+import type { EducationPlace } from '../../../data/education-places.schema'
 import { BuildingEntity } from '../entities/building.entity'
+import { EducationLandmarkEntity } from '../entities/education-landmark.entity'
 import { PlayerEntity } from '../entities/player.entity'
 import { useKeyboardControls } from '../hooks/use-keyboard-controls'
 import { useAdventurePhysics } from '../systems/use-adventure-physics'
@@ -50,7 +55,10 @@ export function AdventureScene({
   const { camera, gl, pointer, raycaster } = useThree()
   const controlsRef = useKeyboardControls()
   const allBuildings = useMemo(() => buildingsData.buildings, [])
-  const { world, playerBodyRef } = useAdventurePhysics(allBuildings)
+  const educationPlaces = useMemo(() => educationPlacesData.places, [])
+  const allObstacles = useMemo(() => [...allBuildings, ...educationPlaces], [allBuildings, educationPlaces])
+  const allAssets = useMemo(() => adventureAssetsData.assets, [])
+  const { world, playerBodyRef } = useAdventurePhysics(allObstacles)
 
   const [activeRegion, setActiveRegion] = useState(() => ({ x: 0, z: 0 }))
 
@@ -70,6 +78,32 @@ export function AdventureScene({
   const target = useMemo(() => new THREE.Vector3(), [])
   const cameraTargetPosition = useMemo(() => new THREE.Vector3(), [])
   const buildingById = useMemo(() => new Map(allBuildings.map((building) => [building.id, building])), [allBuildings])
+  const playerAsset = useMemo(
+    () => allAssets.find((asset) => asset.category === 'player') ?? null,
+    [allAssets],
+  )
+  const experienceAssetMap = useMemo(() => {
+    const map = new Map<string, AdventureAsset>()
+
+    for (const asset of allAssets) {
+      if (asset.category === 'experience') {
+        map.set(asset.relationId, asset)
+      }
+    }
+
+    return map
+  }, [allAssets])
+  const educationAssetMap = useMemo(() => {
+    const map = new Map<string, AdventureAsset>()
+
+    for (const asset of allAssets) {
+      if (asset.category === 'education') {
+        map.set(asset.relationId, asset)
+      }
+    }
+
+    return map
+  }, [allAssets])
 
   const activeBuildings = useMemo(() => {
     return allBuildings.filter((building) => {
@@ -83,6 +117,17 @@ export function AdventureScene({
       return isWithinRegionRange || building.id === selectedBuildingId
     })
   }, [activeRegion.x, activeRegion.z, allBuildings, selectedBuildingId])
+  const activeEducationPlaces = useMemo(() => {
+    return educationPlaces.filter((place) => {
+      const regionX = getRegionCoordinate(place.position.x)
+      const regionZ = getRegionCoordinate(place.position.z)
+
+      return (
+        Math.abs(regionX - activeRegion.x) <= ACTIVE_REGION_RADIUS &&
+        Math.abs(regionZ - activeRegion.z) <= ACTIVE_REGION_RADIUS
+      )
+    })
+  }, [activeRegion.x, activeRegion.z, educationPlaces])
 
   const registerInteractiveMesh = useCallback((buildingId: string, mesh: Mesh | null) => {
     if (mesh) {
@@ -262,15 +307,24 @@ export function AdventureScene({
 
       <AdventureLighting />
       <AdventureGround />
-      <PlayerEntity groupRef={playerGroupRef} />
+      <PlayerEntity groupRef={playerGroupRef} asset={playerAsset} />
 
       {activeBuildings.map((building) => (
         <BuildingEntity
           key={building.id}
           building={building}
+          asset={experienceAssetMap.get(building.experienceId) ?? null}
           isHovered={building.id === hoveredBuildingId}
           isSelected={building.id === selectedBuildingId}
           registerInteractiveMesh={registerInteractiveMesh}
+        />
+      ))}
+
+      {activeEducationPlaces.map((place: EducationPlace) => (
+        <EducationLandmarkEntity
+          key={place.id}
+          place={place}
+          asset={educationAssetMap.get(place.educationId) ?? null}
         />
       ))}
 

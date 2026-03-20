@@ -1,0 +1,77 @@
+{
+  "updatedAt": "2026-03-20",
+  "assets": [
+    {
+      "assetId": "building-foton",
+      "category": "experience",
+      "relationId": "foton-informatica",
+      "title": "Foton Tower Model",
+      "description": "Represents the Foton Informatica experience in the interactive map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "building-ilia",
+      "category": "experience",
+      "relationId": "ilia",
+      "title": "Ilia Hub Model",
+      "description": "Represents the Ilia experience in the interactive map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "building-seedf",
+      "category": "experience",
+      "relationId": "seedf",
+      "title": "SEEDF Base Model",
+      "description": "Represents the SEEDF engineering experience in the interactive map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "building-infinity",
+      "category": "experience",
+      "relationId": "infinity",
+      "title": "Infinity Campus Model",
+      "description": "Represents the Infinity experience in the interactive map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "building-physics-teacher-seedf",
+      "category": "experience",
+      "relationId": "physics-teacher-seedf",
+      "title": "Teacher Pavilion Model",
+      "description": "Represents the Physics Teacher period in the interactive map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "building-autotrac",
+      "category": "experience",
+      "relationId": "autotrac",
+      "title": "Autotrac Node Model",
+      "description": "Represents the Autotrac experience in the interactive map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "education-etb",
+      "category": "education",
+      "relationId": "etb",
+      "title": "ETB Landmark Model",
+      "description": "Represents ETB as part of the education journey in the map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "education-ucb",
+      "category": "education",
+      "relationId": "ucb",
+      "title": "UCB Landmark Model",
+      "description": "Represents UCB as part of the education journey in the map.",
+      "format": "glb"
+    },
+    {
+      "assetId": "player-hugo-avatar",
+      "category": "player",
+      "relationId": "hugo-alves-dutra",
+      "title": "Player Avatar Model",
+      "description": "Represents the player avatar in the adventure mode.",
+      "format": "glb"
+    }
+  ]
+}
