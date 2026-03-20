@@ -24,6 +24,9 @@ import {
   REGION_SIZE,
 } from '../world/world.constants'
 
+const PLAYER_TURN_SMOOTHNESS = 7
+const PLAYER_STEER_SMOOTHNESS = 11
+
 type InteractiveTarget =
   | {
       kind: 'building'
@@ -93,6 +96,10 @@ export function AdventureScene({
   )
   const zoomedCameraOffset = useMemo(() => new THREE.Vector3(), [])
   const movementVector = useMemo(() => new THREE.Vector3(), [])
+  const desiredDirectionVector = useMemo(() => new THREE.Vector3(), [])
+  const smoothedDirectionVectorRef = useRef(new THREE.Vector3(0, 0, 1))
+  const upAxis = useMemo(() => new THREE.Vector3(0, 1, 0), [])
+  const targetOrientationQuaternion = useMemo(() => new THREE.Quaternion(), [])
   const target = useMemo(() => new THREE.Vector3(), [])
   const cameraTargetPosition = useMemo(() => new THREE.Vector3(), [])
   const buildingById = useMemo(() => new Map(allBuildings.map((building) => [building.id, building])), [allBuildings])
@@ -313,12 +320,18 @@ export function AdventureScene({
     const hasMovementInput = controls.forward || controls.backward || controls.left || controls.right
     movementInputRef.current = hasMovementInput
 
-    movementVector.set(axisX, 0, axisZ)
-    const isMoving = movementVector.lengthSq() > 0
+    desiredDirectionVector.set(axisX, 0, axisZ)
+    const hasDirection = desiredDirectionVector.lengthSq() > 0.0001
 
-    if (isMoving) {
+    if (hasDirection) {
+      desiredDirectionVector.normalize()
+      const steerLerpFactor = 1 - Math.exp(-PLAYER_STEER_SMOOTHNESS * delta)
+      smoothedDirectionVectorRef.current.lerp(desiredDirectionVector, steerLerpFactor).normalize()
+    }
+
+    if (hasDirection) {
       const speed = controls.sprint ? PLAYER_BASE_SPEED * 1.35 : PLAYER_BASE_SPEED
-      movementVector.normalize().multiplyScalar(speed)
+      movementVector.copy(smoothedDirectionVectorRef.current).multiplyScalar(speed)
       playerBody.wakeUp()
     } else {
       movementVector.set(0, 0, 0)
@@ -332,8 +345,11 @@ export function AdventureScene({
     if (playerGroupRef.current) {
       playerGroupRef.current.position.set(playerBody.position.x, playerBody.position.y, playerBody.position.z)
 
-      if (isMoving) {
-        playerGroupRef.current.rotation.y = Math.atan2(movementVector.x, movementVector.z)
+      if (hasDirection) {
+        const targetYaw = Math.atan2(smoothedDirectionVectorRef.current.x, smoothedDirectionVectorRef.current.z)
+        targetOrientationQuaternion.setFromAxisAngle(upAxis, targetYaw)
+        const turnLerpFactor = 1 - Math.exp(-PLAYER_TURN_SMOOTHNESS * delta)
+        playerGroupRef.current.quaternion.slerp(targetOrientationQuaternion, turnLerpFactor)
       }
     }
 
