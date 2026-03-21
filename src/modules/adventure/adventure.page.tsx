@@ -6,6 +6,7 @@ import { educationPlacesData } from '../../data/education-places'
 import type { EducationPlace } from '../../data/education-places.schema'
 import { experiencesData } from '../../data/experiences'
 import { useAppMode } from '../../shared/hooks/use-app-mode'
+import { useIsMobileDevice } from '../../shared/hooks/use-is-mobile-device'
 import { useAppStore } from '../../shared/stores/use-app-store'
 import { Button } from '../../shared/ui/button'
 import { Card } from '../../shared/ui/card'
@@ -113,6 +114,7 @@ function getPlayerToBoxDistance(
 
 export function AdventurePage() {
   useAppMode('adventure')
+  const isMobileDevice = useIsMobileDevice()
 
   const openPopup = useAppStore((state) => state.openPopup)
   const closePopup = useAppStore((state) => state.closePopup)
@@ -503,6 +505,32 @@ export function AdventurePage() {
   const handleTouchJoystickChange = useCallback((vector: TouchMoveVector) => {
     touchControlsRef.current = vector
   }, [])
+
+  if (isMobileDevice) {
+    return (
+      <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-6 py-10">
+        <header className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:text-sky-300">
+              Adventure Mode
+            </p>
+            <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">3D Interactive Map</h1>
+          </div>
+
+          <Link
+            className="inline-flex items-center text-sm font-medium text-sky-700 hover:underline dark:text-sky-300"
+            to="/"
+          >
+            Back
+          </Link>
+        </header>
+
+        <Card>
+          <p className="text-base font-semibold text-slate-900 dark:text-slate-100">Available only on desktop</p>
+        </Card>
+      </main>
+    )
+  }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-6 py-10">

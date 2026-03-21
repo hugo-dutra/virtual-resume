@@ -192,6 +192,7 @@ export function AdventureScene({
   const allBuildings = useMemo(() => buildingsData.buildings, [])
   const educationPlaces = useMemo(() => educationPlacesData.places, [])
   const [dynamicObstacleBoundsById, setDynamicObstacleBoundsById] = useState<Record<string, ObstacleBounds>>({})
+  const [isPlayerAnimationReady, setIsPlayerAnimationReady] = useState(false)
   const staticObstacles = useMemo<StaticObstacle[]>(
     () => [...allBuildings, ...educationPlaces],
     [allBuildings, educationPlaces],
@@ -313,6 +314,9 @@ export function AdventureScene({
     }
 
     delete interactiveMeshesRef.current[buildingId]
+  }, [])
+  const handlePlayerAnimationReadyChange = useCallback((ready: boolean) => {
+    setIsPlayerAnimationReady(ready)
   }, [])
   const handleObstacleBoundsChange = useCallback(
     (obstacleId: string, bounds: ObstacleBounds | null) => {
@@ -522,10 +526,10 @@ export function AdventureScene({
     const axisZ = THREE.MathUtils.clamp(keyboardAxisZ + touchAxisZ, -1, 1)
     const keyboardHasMovementInput = controls.forward || controls.backward || controls.left || controls.right
     const touchHasMovementInput = Math.abs(touchAxisX) > 0.04 || Math.abs(touchAxisZ) > 0.04
-    const hasMovementInput = keyboardHasMovementInput || touchHasMovementInput
+    const hasMovementInput = isPlayerAnimationReady && (keyboardHasMovementInput || touchHasMovementInput)
     movementInputRef.current = hasMovementInput
 
-    desiredDirectionVector.set(axisX, 0, axisZ)
+    desiredDirectionVector.set(isPlayerAnimationReady ? axisX : 0, 0, isPlayerAnimationReady ? axisZ : 0)
     const hasDirection = desiredDirectionVector.lengthSq() > 0.0001
 
     if (hasDirection) {
@@ -618,7 +622,12 @@ export function AdventureScene({
 
       <AdventureLighting followTargetRef={playerGroupRef} />
       <AdventureGround asset={groundAsset} />
-      <PlayerEntity groupRef={playerGroupRef} asset={playerAsset} movementInputRef={movementInputRef} />
+      <PlayerEntity
+        groupRef={playerGroupRef}
+        asset={playerAsset}
+        movementInputRef={movementInputRef}
+        onAnimationReadyChange={handlePlayerAnimationReadyChange}
+      />
 
       {activeBuildings.map((building) => (
         <BuildingEntity

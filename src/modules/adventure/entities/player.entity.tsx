@@ -17,6 +17,7 @@ type PlayerEntityProps = {
   groupRef: MutableRefObject<Group | null>
   asset: AdventureAsset | null
   movementInputRef: MutableRefObject<boolean>
+  onAnimationReadyChange?: (ready: boolean) => void
 }
 
 function normalizeClipName(name: string) {
@@ -28,7 +29,12 @@ function findEmbeddedClip(animations: AnimationClip[], keywords: string[]) {
   return normalizedPairs.find((entry) => keywords.some((keyword) => entry.normalized.includes(keyword)))?.clip
 }
 
-export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntityProps) {
+export function PlayerEntity({
+  groupRef,
+  asset,
+  movementInputRef,
+  onAnimationReadyChange,
+}: PlayerEntityProps) {
   const modelUrl = getAssetModelUrl(asset)
   const animationUrls = useMemo(() => getPlayerAnimationUrls(asset), [asset])
   const fallbackFbxModelUrl = animationUrls.idle ?? animationUrls.run ?? null
@@ -124,6 +130,18 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
   }, [resolvedClips.idle, resolvedClips.run, resolvedModelScene])
 
   const { actions } = useAnimations(animationSet, resolvedModelScene ?? undefined)
+  const hasRequiredAnimationActions = Boolean(actions['state-idle']) && Boolean(actions['state-run'])
+  const isAnimationReady = Boolean(resolvedModelScene) && animationSet.length > 0 && hasRequiredAnimationActions
+
+  useEffect(() => {
+    onAnimationReadyChange?.(isAnimationReady)
+  }, [isAnimationReady, onAnimationReadyChange])
+
+  useEffect(() => {
+    return () => {
+      onAnimationReadyChange?.(false)
+    }
+  }, [onAnimationReadyChange])
 
   const playState = useCallback(
     (state: PlayerAnimationState) => {
@@ -160,7 +178,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
   )
 
   useEffect(() => {
-    if (!resolvedModelScene || animationSet.length === 0) {
+    if (!isAnimationReady) {
       return
     }
 
@@ -177,10 +195,10 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
         currentActionRef.current.fadeOut(0.1)
       }
     }
-  }, [animationSet, movementInputRef, playState, resolvedModelScene])
+  }, [animationSet, isAnimationReady, movementInputRef, playState, resolvedModelScene])
 
   useFrame(() => {
-    if (!resolvedModelScene || animationSet.length === 0) {
+    if (!isAnimationReady) {
       return
     }
 

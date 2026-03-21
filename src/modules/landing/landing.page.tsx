@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Button } from '../../shared/ui/button'
 import { SectionTitle } from '../../shared/components/section-title'
 import { useAppMode } from '../../shared/hooks/use-app-mode'
+import { useIsMobileDevice } from '../../shared/hooks/use-is-mobile-device'
 import { useAppStore } from '../../shared/stores/use-app-store'
 import { resolvePublicAssetPath } from '../../shared/utils/resolve-public-asset-path'
 import { useAdventureAudio } from '../adventure/hooks/use-adventure-audio'
@@ -41,6 +42,7 @@ const LINKEDIN_PROFILE_URL = 'https://www.linkedin.com/in/hugo-d-71398988/'
 
 export function LandingPage() {
   useAppMode('landing')
+  const isMobileDevice = useIsMobileDevice()
 
   const heroRef = useRef<HTMLElement | null>(null)
   const [photoIndex, setPhotoIndex] = useState(0)
@@ -215,6 +217,8 @@ export function LandingPage() {
                 title="Adventure"
                 description="Interactive map with visual progression across professional experiences."
                 portraitSrc={MODE_02_PORTRAIT}
+                disabled={isMobileDevice}
+                disabledMessage="Available only on desktop"
               />
             </div>
           </div>

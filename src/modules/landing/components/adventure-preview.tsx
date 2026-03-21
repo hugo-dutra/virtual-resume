@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { type MouseEvent, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { cn } from '../../../shared/utils/cn'
@@ -21,9 +21,20 @@ type AdventurePreviewProps = {
   tag: string
   portraitSrc?: string
   className?: string
+  disabled?: boolean
+  disabledMessage?: string
 }
 
-export function AdventurePreview({ to, title, description, tag, portraitSrc, className }: AdventurePreviewProps) {
+export function AdventurePreview({
+  to,
+  title,
+  description,
+  tag,
+  portraitSrc,
+  className,
+  disabled = false,
+  disabledMessage = 'Available only on desktop',
+}: AdventurePreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [hasPortrait, setHasPortrait] = useState(Boolean(portraitSrc))
 
@@ -130,9 +141,23 @@ export function AdventurePreview({ to, title, description, tag, portraitSrc, cla
     }
   }, [])
 
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!disabled) {
+      return
+    }
+
+    event.preventDefault()
+    window.alert(disabledMessage)
+  }
+
   return (
     <motion.div className={className} whileHover={{ y: -6 }} whileTap={{ scale: 0.99 }}>
-      <Link className="group block h-full" to={to}>
+      <Link
+        className={cn('group block h-full', disabled ? 'cursor-not-allowed' : undefined)}
+        to={to}
+        aria-disabled={disabled}
+        onClick={handleClick}
+      >
         <article
           className={cn(
             'relative h-full overflow-hidden rounded-2xl border border-sky-200/60 bg-slate-900 shadow-2xl',
