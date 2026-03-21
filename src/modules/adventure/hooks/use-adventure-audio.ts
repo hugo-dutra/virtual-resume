@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { Howl } from 'howler'
+import { resolvePublicAssetPath } from '../../../shared/utils/resolve-public-asset-path'
 
-const AMBIENT_AUDIO_SRC = '/assets/audio/adventure-ambient.wav'
+const AMBIENT_AUDIO_SRC = resolvePublicAssetPath('/assets/audio/adventure-ambient.wav')
 
 export function useAdventureAudio(audioEnabled: boolean) {
   const soundRef = useRef<Howl | null>(null)

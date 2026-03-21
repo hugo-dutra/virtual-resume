@@ -1,11 +1,12 @@
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
+import { resolvePublicAssetPath } from '../../../shared/utils/resolve-public-asset-path'
 import { useModelAsset } from '../hooks/use-model-asset'
 import { getAssetModelUrl, resolveAssetTransform } from '../utils/adventure-asset-resolver'
 import { GROUND_SIZE } from './world.constants'
 
-const TERRAIN_TEXTURE_PATH = '/assets/textures/terrain-pattern.svg'
+const TERRAIN_TEXTURE_PATH = resolvePublicAssetPath('/assets/textures/terrain-pattern.svg')
 
 type AdventureGroundProps = {
   asset: AdventureAsset | null

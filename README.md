@@ -7,6 +7,23 @@ Currently, two official plugins are available:
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
+## CI/CD and GitHub Pages
+
+- CI workflow: `.github/workflows/ci.yml`
+- Deploy workflow: `.github/workflows/deploy.yml`
+- Deployment target: GitHub Pages, triggered on pushes to `main` or `master`
+
+### First-time setup
+
+1. Push this repository to GitHub.
+2. In GitHub, open **Settings > Pages** and set **Source** to **GitHub Actions**.
+3. Trigger a push to `main`/`master` (or run the deploy workflow manually).
+4. Your site URL will be:
+   - `https://<your-github-username>.github.io/<repository-name>/`
+
+Notes:
+- The deploy pipeline builds with repository base path and publishes an SPA fallback (`404.html`) so direct links like `/adventure` keep working on Pages.
+
 ## React Compiler
 
 The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).

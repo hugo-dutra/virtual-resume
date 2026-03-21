@@ -5,5 +5,5 @@ import { BrowserRouter } from 'react-router-dom'
 export function AppProviders({ children }: PropsWithChildren) {
   useThemeClass()
 
-  return <BrowserRouter>{children}</BrowserRouter>
+  return <BrowserRouter basename={import.meta.env.BASE_URL}>{children}</BrowserRouter>
 }

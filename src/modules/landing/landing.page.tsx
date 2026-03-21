@@ -5,6 +5,7 @@ import { Button } from '../../shared/ui/button'
 import { SectionTitle } from '../../shared/components/section-title'
 import { useAppMode } from '../../shared/hooks/use-app-mode'
 import { useAppStore } from '../../shared/stores/use-app-store'
+import { resolvePublicAssetPath } from '../../shared/utils/resolve-public-asset-path'
 import { AdventurePreview } from './components/adventure-preview'
 import { ModeCard } from './components/mode-card'
 
@@ -27,10 +28,10 @@ const motionItem = {
 }
 
 const HERO_PHOTO_CANDIDATES = [
-  '/assets/profile/hero-photo.avif',
-  '/assets/profile/hero-photo.webp',
-  '/assets/profile/hero-photo.jpg',
-  '/assets/profile/hero-photo.png',
+  resolvePublicAssetPath('/assets/profile/hero-photo.avif'),
+  resolvePublicAssetPath('/assets/profile/hero-photo.webp'),
+  resolvePublicAssetPath('/assets/profile/hero-photo.jpg'),
+  resolvePublicAssetPath('/assets/profile/hero-photo.png'),
 ] as const
 
 export function LandingPage() {

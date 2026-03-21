@@ -4,6 +4,7 @@ import type { Group, Mesh } from 'three'
 import * as THREE from 'three'
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
 import type { Building } from '../../../data/buildings.schema'
+import { resolvePublicAssetPath } from '../../../shared/utils/resolve-public-asset-path'
 import { useModelAsset } from '../hooks/use-model-asset'
 import { getAssetModelUrl, resolveAssetTransform } from '../utils/adventure-asset-resolver'
 
@@ -97,7 +98,7 @@ export function BuildingEntity({
   registerInteractiveMesh,
   onObstacleBoundsChange,
 }: BuildingEntityProps) {
-  const roofTexture = useTexture('/assets/textures/roof-pattern.svg')
+  const roofTexture = useTexture(resolvePublicAssetPath('/assets/textures/roof-pattern.svg'))
   const modelUrl = getAssetModelUrl(asset)
   const { scene: modelScene } = useModelAsset(modelUrl)
   const { offset, rotation, scale, collisionScale, collisionOffset } = useMemo(

@@ -1,4 +1,5 @@
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
+import { resolvePublicAssetPath } from '../../../shared/utils/resolve-public-asset-path'
 
 type Vector3Tuple = [number, number, number]
 type AnimationState = 'idle' | 'walk' | 'run'
@@ -16,7 +17,7 @@ export function getAssetModelUrl(asset: AdventureAsset | null) {
     return null
   }
 
-  return `/assets/models/${asset.assetId}.${asset.format}`
+  return resolvePublicAssetPath(`/assets/models/${asset.assetId}.${asset.format}`)
 }
 
 export function resolveAssetTransform(asset: AdventureAsset | null): AssetTransform {
@@ -45,8 +46,8 @@ export function getPlayerAnimationUrls(asset: AdventureAsset | null): Partial<Re
   const run = asset.animations?.run
 
   return {
-    idle: idle ? `/assets/models/${idle}` : undefined,
-    walk: walk ? `/assets/models/${walk}` : undefined,
-    run: run ? `/assets/models/${run}` : undefined,
+    idle: idle ? resolvePublicAssetPath(`/assets/models/${idle}`) : undefined,
+    walk: walk ? resolvePublicAssetPath(`/assets/models/${walk}`) : undefined,
+    run: run ? resolvePublicAssetPath(`/assets/models/${run}`) : undefined,
   }
 }
