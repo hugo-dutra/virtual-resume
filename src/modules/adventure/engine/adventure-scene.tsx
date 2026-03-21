@@ -19,6 +19,7 @@ import { AdventurePostprocessing } from '../world/adventure-postprocessing'
 import {
   ACTIVE_REGION_RADIUS,
   CAMERA_FOLLOW_OFFSET,
+  GROUND_SIZE,
   MAP_SIZE,
   PLAYER_BASE_SPEED,
   PLAYER_RADIUS,
@@ -32,8 +33,9 @@ const PLAYER_REVERSE_STEER_SMOOTHNESS = 24
 const MIN_OBSTACLE_HEIGHT = PLAYER_RADIUS * 2 + 0.3
 const OBSTACLE_BOUNDS_EPSILON = 0.01
 const MIN_DYNAMIC_OBSTACLE_SIZE = 0.1
-const MAX_DYNAMIC_OBSTACLE_SIZE = MAP_SIZE * 0.75
-const MAX_DYNAMIC_OBSTACLE_SHIFT = MAP_SIZE
+const HALF_GROUND_SIZE = GROUND_SIZE / 2
+const DYNAMIC_OBSTACLE_EDGE_MARGIN = 0.5
+const MAX_DYNAMIC_OBSTACLE_SIZE = GROUND_SIZE - DYNAMIC_OBSTACLE_EDGE_MARGIN * 2
 const INITIAL_CAMERA_ZOOM_FACTOR = 1.5
 
 type ObstacleBounds = {
@@ -151,21 +153,20 @@ function sanitizeDynamicObstacleBounds(
     return null
   }
 
-  const shiftX = Math.abs(bounds.position.x - obstacle.position.x)
-  const shiftZ = Math.abs(bounds.position.z - obstacle.position.z)
-  if (shiftX > MAX_DYNAMIC_OBSTACLE_SHIFT || shiftZ > MAX_DYNAMIC_OBSTACLE_SHIFT) {
-    return null
-  }
+  const maxCenterCoordinate = HALF_GROUND_SIZE - DYNAMIC_OBSTACLE_EDGE_MARGIN
+  const clampedSizeX = THREE.MathUtils.clamp(bounds.size.x, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE)
+  const clampedSizeY = THREE.MathUtils.clamp(bounds.size.y, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE)
+  const clampedSizeZ = THREE.MathUtils.clamp(bounds.size.z, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE)
 
   return {
     position: {
-      x: bounds.position.x,
-      z: bounds.position.z,
+      x: THREE.MathUtils.clamp(bounds.position.x, -maxCenterCoordinate, maxCenterCoordinate),
+      z: THREE.MathUtils.clamp(bounds.position.z, -maxCenterCoordinate, maxCenterCoordinate),
     },
     size: {
-      x: THREE.MathUtils.clamp(bounds.size.x, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE),
-      y: THREE.MathUtils.clamp(bounds.size.y, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE),
-      z: THREE.MathUtils.clamp(bounds.size.z, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE),
+      x: Math.max(clampedSizeX, obstacle.size.x),
+      y: Math.max(clampedSizeY, obstacle.size.y, MIN_OBSTACLE_HEIGHT),
+      z: Math.max(clampedSizeZ, obstacle.size.z),
     },
   }
 }

@@ -137,7 +137,10 @@ export function EducationLandmarkEntity({
 }: EducationLandmarkEntityProps) {
   const modelUrl = getAssetModelUrl(asset)
   const { scene: modelScene } = useModelAsset(modelUrl)
-  const { offset, rotation, scale } = useMemo(() => resolveAssetTransform(asset), [asset])
+  const { offset, rotation, scale, collisionScale, collisionOffset } = useMemo(
+    () => resolveAssetTransform(asset),
+    [asset],
+  )
   const modelWrapperRef = useRef<Group | null>(null)
   const publishedBoundsRef = useRef<EducationProximityBounds | null>(null)
   const publishedObstacleBoundsRef = useRef<ObstacleBounds | null>(null)
@@ -146,6 +149,8 @@ export function EducationLandmarkEntity({
   const [offsetX, offsetY, offsetZ] = offset
   const [rotationX, rotationY, rotationZ] = rotation
   const [scaleX, scaleY, scaleZ] = scale
+  const [collisionScaleX, collisionScaleY, collisionScaleZ] = collisionScale
+  const [collisionOffsetX, collisionOffsetY, collisionOffsetZ] = collisionOffset
   const interactiveMeshRef = useCallback(
     (mesh: Mesh | null) => {
       registerInteractiveMesh(place.id, mesh)
@@ -214,28 +219,35 @@ export function EducationLandmarkEntity({
     bounds.getSize(size)
     bounds.getCenter(center)
 
+    const tunedCenterX = center.x + collisionOffsetX
+    const tunedCenterY = center.y + collisionOffsetY
+    const tunedCenterZ = center.z + collisionOffsetZ
+    const tunedSizeX = Math.max(size.x * Math.max(collisionScaleX, 0), MIN_BOUND_SIZE)
+    const tunedSizeY = Math.max(size.y * Math.max(collisionScaleY, 0), MIN_BOUND_SIZE)
+    const tunedSizeZ = Math.max(size.z * Math.max(collisionScaleZ, 0), MIN_BOUND_SIZE)
+
     const nextBounds: InteractiveBounds = {
-      center: [center.x - place.position.x, center.y, center.z - place.position.z],
-      size: [Math.max(size.x, MIN_BOUND_SIZE), Math.max(size.y, MIN_BOUND_SIZE), Math.max(size.z, MIN_BOUND_SIZE)],
+      center: [tunedCenterX - place.position.x, tunedCenterY, tunedCenterZ - place.position.z],
+      size: [tunedSizeX, tunedSizeY, tunedSizeZ],
       proximity: {
         position: {
-          x: center.x,
-          z: center.z,
+          x: tunedCenterX,
+          z: tunedCenterZ,
         },
         size: {
-          x: Math.max(size.x, MIN_BOUND_SIZE),
-          z: Math.max(size.z, MIN_BOUND_SIZE),
+          x: tunedSizeX,
+          z: tunedSizeZ,
         },
       },
       obstacle: {
         position: {
-          x: center.x,
-          z: center.z,
+          x: tunedCenterX,
+          z: tunedCenterZ,
         },
         size: {
-          x: Math.max(size.x, MIN_BOUND_SIZE),
-          y: Math.max(size.y, MIN_BOUND_SIZE),
-          z: Math.max(size.z, MIN_BOUND_SIZE),
+          x: tunedSizeX,
+          y: tunedSizeY,
+          z: tunedSizeZ,
         },
       },
     }
@@ -261,6 +273,12 @@ export function EducationLandmarkEntity({
     scaleX,
     scaleY,
     scaleZ,
+    collisionScaleX,
+    collisionScaleY,
+    collisionScaleZ,
+    collisionOffsetX,
+    collisionOffsetY,
+    collisionOffsetZ,
   ])
 
   useEffect(() => {

@@ -20,6 +20,7 @@ import { PLAYER_RADIUS } from './world/world.constants'
 const PROXIMITY_AUTO_OPEN_DISTANCE = 4
 const PROXIMITY_AUTO_CLOSE_DISTANCE = 6
 const PROXIMITY_REOPEN_DELTA = 0.03
+const MARKER_BOUNDS_EPSILON = 0.01
 
 type DismissedTarget =
   | {
@@ -53,6 +54,36 @@ type BuildingProximityBounds = {
     x: number
     z: number
   }
+}
+
+function areProximityBoundsClose(
+  a: {
+    position: {
+      x: number
+      z: number
+    }
+    size: {
+      x: number
+      z: number
+    }
+  },
+  b: {
+    position: {
+      x: number
+      z: number
+    }
+    size: {
+      x: number
+      z: number
+    }
+  },
+) {
+  return (
+    Math.abs(a.position.x - b.position.x) <= MARKER_BOUNDS_EPSILON &&
+    Math.abs(a.position.z - b.position.z) <= MARKER_BOUNDS_EPSILON &&
+    Math.abs(a.size.x - b.size.x) <= MARKER_BOUNDS_EPSILON &&
+    Math.abs(a.size.z - b.size.z) <= MARKER_BOUNDS_EPSILON
+  )
 }
 
 function getPlayerToBoxDistance(
@@ -90,6 +121,12 @@ export function AdventurePage() {
   const toggleAudio = useAppStore((state) => state.toggleAudio)
   const [playerPosition, setPlayerPosition] = useState<PlayerPosition>({ x: 0, z: 0 })
   const [selectedEducationPlaceId, setSelectedEducationPlaceId] = useState<string | null>(null)
+  const [buildingMarkerBoundsById, setBuildingMarkerBoundsById] = useState<
+    Record<string, BuildingProximityBounds>
+  >({})
+  const [educationMarkerBoundsById, setEducationMarkerBoundsById] = useState<
+    Record<string, EducationProximityBounds>
+  >({})
 
   useAdventureAudio(audioEnabled)
 
@@ -145,20 +182,82 @@ export function AdventurePage() {
 
   const handleEducationBoundsChange = useCallback((placeId: string, bounds: EducationProximityBounds | null) => {
     if (bounds) {
-      educationBoundsByIdRef.current.set(placeId, bounds)
+      const normalizedBounds: EducationProximityBounds = {
+        position: {
+          x: bounds.position.x,
+          z: bounds.position.z,
+        },
+        size: {
+          x: bounds.size.x,
+          z: bounds.size.z,
+        },
+      }
+
+      educationBoundsByIdRef.current.set(placeId, normalizedBounds)
+      setEducationMarkerBoundsById((currentBounds) => {
+        const previousBounds = currentBounds[placeId]
+        if (previousBounds && areProximityBoundsClose(previousBounds, normalizedBounds)) {
+          return currentBounds
+        }
+
+        return {
+          ...currentBounds,
+          [placeId]: normalizedBounds,
+        }
+      })
       return
     }
 
     educationBoundsByIdRef.current.delete(placeId)
+    setEducationMarkerBoundsById((currentBounds) => {
+      if (!(placeId in currentBounds)) {
+        return currentBounds
+      }
+
+      const nextBounds = { ...currentBounds }
+      delete nextBounds[placeId]
+      return nextBounds
+    })
   }, [])
 
   const handleBuildingBoundsChange = useCallback((buildingId: string, bounds: BuildingProximityBounds | null) => {
     if (bounds) {
-      buildingBoundsByIdRef.current.set(buildingId, bounds)
+      const normalizedBounds: BuildingProximityBounds = {
+        position: {
+          x: bounds.position.x,
+          z: bounds.position.z,
+        },
+        size: {
+          x: bounds.size.x,
+          z: bounds.size.z,
+        },
+      }
+
+      buildingBoundsByIdRef.current.set(buildingId, normalizedBounds)
+      setBuildingMarkerBoundsById((currentBounds) => {
+        const previousBounds = currentBounds[buildingId]
+        if (previousBounds && areProximityBoundsClose(previousBounds, normalizedBounds)) {
+          return currentBounds
+        }
+
+        return {
+          ...currentBounds,
+          [buildingId]: normalizedBounds,
+        }
+      })
       return
     }
 
     buildingBoundsByIdRef.current.delete(buildingId)
+    setBuildingMarkerBoundsById((currentBounds) => {
+      if (!(buildingId in currentBounds)) {
+        return currentBounds
+      }
+
+      const nextBounds = { ...currentBounds }
+      delete nextBounds[buildingId]
+      return nextBounds
+    })
   }, [])
 
   const getBuildingDistance = useCallback((position: PlayerPosition, building: Building) => {
@@ -460,6 +559,8 @@ export function AdventurePage() {
               playerPosition={playerPosition}
               buildings={buildingsData.buildings}
               educationPlaces={educationPlacesData.places}
+              buildingMarkerBoundsById={buildingMarkerBoundsById}
+              educationMarkerBoundsById={educationMarkerBoundsById}
               onEducationMarkerSelect={handleEducationMarkerSelect}
             />
           </div>

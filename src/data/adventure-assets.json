@@ -23,7 +23,20 @@
       "relationId": "seedf",
       "title": "SEEDF Base Model",
       "description": "Represents the SEEDF engineering experience in the interactive map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 25.0,
+          "y": 25.0,
+          "z": 25.0
+        },
+        "offset": {
+          "x": 6,
+          "y": 0,
+          "z": -8
+        },
+        "rotationY": 55
+      }
     },
     {
       "assetId": "building-infinity",
@@ -31,7 +44,32 @@
       "relationId": "infinity",
       "title": "Infinity Campus Model",
       "description": "Represents the Infinity experience in the interactive map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 25.0,
+          "y": 25.0,
+          "z": 25.0
+        },
+        "offset": {
+          "x": -6,
+          "y": 0,
+          "z": -8
+        },
+        "rotationY": -55,
+        "collision": {
+          "scale": {
+            "x": 1.18,
+            "y": 1.0,
+            "z": 1.18
+          },
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
     },
     {
       "assetId": "building-physics-teacher-seedf",

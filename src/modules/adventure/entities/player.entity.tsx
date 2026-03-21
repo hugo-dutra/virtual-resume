@@ -143,7 +143,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
       }
 
       nextAction.setLoop(THREE.LoopRepeat, Infinity)
-      nextAction.setEffectiveTimeScale(0.85)
+      nextAction.setEffectiveTimeScale(0.80)
       nextAction.setEffectiveWeight(1)
       nextAction.reset().fadeIn(0.12).play()
 
@@ -162,6 +162,10 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
       return
     }
 
+    // Animation actions can be recreated when clips finish loading.
+    // Reset references so the current desired state is rebound to the latest action set.
+    currentActionRef.current = null
+    activeStateRef.current = null
     const initialState: PlayerAnimationState = movementInputRef.current ? 'run' : 'idle'
     playState(initialState)
 
@@ -170,7 +174,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
         currentActionRef.current.fadeOut(0.1)
       }
     }
-  }, [animationSet.length, movementInputRef, playState, resolvedModelScene])
+  }, [animationSet, movementInputRef, playState, resolvedModelScene])
 
   useFrame(() => {
     if (!resolvedModelScene || animationSet.length === 0) {

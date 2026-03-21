@@ -100,7 +100,10 @@ export function BuildingEntity({
   const roofTexture = useTexture('/assets/textures/roof-pattern.svg')
   const modelUrl = getAssetModelUrl(asset)
   const { scene: modelScene } = useModelAsset(modelUrl)
-  const { offset, rotation, scale } = useMemo(() => resolveAssetTransform(asset), [asset])
+  const { offset, rotation, scale, collisionScale, collisionOffset } = useMemo(
+    () => resolveAssetTransform(asset),
+    [asset],
+  )
   const modelWrapperRef = useRef<Group | null>(null)
   const publishedObstacleBoundsRef = useRef<ObstacleBounds | null>(null)
   const fallbackBounds = useMemo(() => getFallbackBounds(building), [building])
@@ -108,6 +111,8 @@ export function BuildingEntity({
   const [offsetX, offsetY, offsetZ] = offset
   const [rotationX, rotationY, rotationZ] = rotation
   const [scaleX, scaleY, scaleZ] = scale
+  const [collisionScaleX, collisionScaleY, collisionScaleZ] = collisionScale
+  const [collisionOffsetX, collisionOffsetY, collisionOffsetZ] = collisionOffset
 
   const interactiveMeshRef = useCallback(
     (mesh: Mesh | null) => {
@@ -162,18 +167,25 @@ export function BuildingEntity({
     bounds.getSize(size)
     bounds.getCenter(center)
 
+    const tunedCenterX = center.x + collisionOffsetX
+    const tunedCenterY = center.y + collisionOffsetY
+    const tunedCenterZ = center.z + collisionOffsetZ
+    const tunedSizeX = Math.max(size.x * Math.max(collisionScaleX, 0), MIN_BOUND_SIZE)
+    const tunedSizeY = Math.max(size.y * Math.max(collisionScaleY, 0), MIN_BOUND_SIZE)
+    const tunedSizeZ = Math.max(size.z * Math.max(collisionScaleZ, 0), MIN_BOUND_SIZE)
+
     const nextBounds: InteractiveBounds = {
-      center: [center.x - building.position.x, center.y, center.z - building.position.z],
-      size: [Math.max(size.x, MIN_BOUND_SIZE), Math.max(size.y, MIN_BOUND_SIZE), Math.max(size.z, MIN_BOUND_SIZE)],
+      center: [tunedCenterX - building.position.x, tunedCenterY, tunedCenterZ - building.position.z],
+      size: [tunedSizeX, tunedSizeY, tunedSizeZ],
       obstacle: {
         position: {
-          x: center.x,
-          z: center.z,
+          x: tunedCenterX,
+          z: tunedCenterZ,
         },
         size: {
-          x: Math.max(size.x, MIN_BOUND_SIZE),
-          y: Math.max(size.y, MIN_BOUND_SIZE),
-          z: Math.max(size.z, MIN_BOUND_SIZE),
+          x: tunedSizeX,
+          y: tunedSizeY,
+          z: tunedSizeZ,
         },
       },
     }
@@ -197,6 +209,12 @@ export function BuildingEntity({
     scaleX,
     scaleY,
     scaleZ,
+    collisionScaleX,
+    collisionScaleY,
+    collisionScaleZ,
+    collisionOffsetX,
+    collisionOffsetY,
+    collisionOffsetZ,
   ])
 
   useEffect(() => {

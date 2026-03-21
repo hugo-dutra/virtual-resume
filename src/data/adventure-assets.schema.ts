@@ -10,6 +10,12 @@ const assetTransformSchema = z.object({
   scale: vector3Schema.optional(),
   offset: vector3Schema.optional(),
   rotationY: z.number().optional(),
+  collision: z
+    .object({
+      scale: vector3Schema.optional(),
+      offset: vector3Schema.optional(),
+    })
+    .optional(),
 })
 
 const playerAnimationFilesSchema = z.object({

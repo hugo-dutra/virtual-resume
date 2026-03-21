@@ -16,6 +16,17 @@ type MarkerPosition = {
   isClamped: boolean
 }
 
+type ProximityBounds = {
+  position: {
+    x: number
+    z: number
+  }
+  size: {
+    x: number
+    z: number
+  }
+}
+
 type AdventureHudProps = {
   hoveredBuildingId: string | null
   selectedBuildingId: string | null
@@ -23,7 +34,34 @@ type AdventureHudProps = {
   playerPosition: PlayerPosition
   buildings: Building[]
   educationPlaces: EducationPlace[]
+  buildingMarkerBoundsById?: Record<string, ProximityBounds>
+  educationMarkerBoundsById?: Record<string, ProximityBounds>
   onEducationMarkerSelect: (placeId: string) => void
+}
+
+function getClosestPointToPlayerOnBounds(
+  playerPosition: PlayerPosition,
+  fallbackPosition: {
+    x: number
+    z: number
+  },
+  bounds?: ProximityBounds,
+) {
+  if (!bounds) {
+    return fallbackPosition
+  }
+
+  const halfWidth = bounds.size.x / 2
+  const halfDepth = bounds.size.z / 2
+  const minX = bounds.position.x - halfWidth
+  const maxX = bounds.position.x + halfWidth
+  const minZ = bounds.position.z - halfDepth
+  const maxZ = bounds.position.z + halfDepth
+
+  return {
+    x: Math.min(Math.max(playerPosition.x, minX), maxX),
+    z: Math.min(Math.max(playerPosition.z, minZ), maxZ),
+  }
 }
 
 export function AdventureHud({
@@ -33,11 +71,18 @@ export function AdventureHud({
   playerPosition,
   buildings,
   educationPlaces,
+  buildingMarkerBoundsById,
+  educationMarkerBoundsById,
   onEducationMarkerSelect,
 }: AdventureHudProps) {
   const experienceMarkerPositions: MarkerPosition[] = buildings.map((building) => {
-    const offsetX = building.position.x - playerPosition.x
-    const offsetZ = building.position.z - playerPosition.z
+    const markerPoint = getClosestPointToPlayerOnBounds(
+      playerPosition,
+      building.position,
+      buildingMarkerBoundsById?.[building.id],
+    )
+    const offsetX = markerPoint.x - playerPosition.x
+    const offsetZ = markerPoint.z - playerPosition.z
     const distance = Math.hypot(offsetX, offsetZ)
 
     const clampRatio = distance > MINIMAP_VIEW_RADIUS ? MINIMAP_VIEW_RADIUS / distance : 1
@@ -53,8 +98,13 @@ export function AdventureHud({
     }
   })
   const educationMarkerPositions: MarkerPosition[] = educationPlaces.map((place) => {
-    const offsetX = place.position.x - playerPosition.x
-    const offsetZ = place.position.z - playerPosition.z
+    const markerPoint = getClosestPointToPlayerOnBounds(
+      playerPosition,
+      place.position,
+      educationMarkerBoundsById?.[place.id],
+    )
+    const offsetX = markerPoint.x - playerPosition.x
+    const offsetZ = markerPoint.z - playerPosition.z
     const distance = Math.hypot(offsetX, offsetZ)
 
     const clampRatio = distance > MINIMAP_VIEW_RADIUS ? MINIMAP_VIEW_RADIUS / distance : 1

@@ -38,8 +38,6 @@ export function AdventureGround({ asset }: AdventureGroundProps) {
               metalness={0.03}
             />
           </mesh>
-
-          <gridHelper args={[GROUND_SIZE, GROUND_SIZE, '#64748b', '#1f2937']} position={[0, 0.01, 0]} />
         </>
       )}
     </group>
