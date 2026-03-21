@@ -34,6 +34,10 @@ const HERO_PHOTO_CANDIDATES = [
   resolvePublicAssetPath('/assets/profile/hero-photo.png'),
 ] as const
 
+const MODE_02_PORTRAIT = resolvePublicAssetPath('/assets/profile/hero-happy.png')
+const MODE_01_PORTRAIT = resolvePublicAssetPath('/assets/profile/hero-bored.png')
+const LINKEDIN_PROFILE_URL = 'https://www.linkedin.com/in/hugo-d-71398988/'
+
 export function LandingPage() {
   useAppMode('landing')
 
@@ -85,7 +89,7 @@ export function LandingPage() {
   }
 
   return (
-    <main className="relative isolate mx-auto flex min-h-screen w-full max-w-6xl items-center px-6 py-16 sm:py-20">
+    <main className="relative isolate mx-auto flex min-h-screen w-full max-w-6xl items-start px-6 py-6 sm:py-8">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.22),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(2,132,199,0.15),transparent_35%)]"
@@ -124,13 +128,30 @@ export function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.p
-            data-gsap-badge
-            className="inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:border-sky-700 dark:bg-sky-900/40 dark:text-sky-200"
-            variants={motionItem}
-          >
-            Portfolio Experience
-          </motion.p>
+          <motion.div className="flex w-fit items-center gap-2" data-gsap-badge variants={motionItem}>
+            <p className="inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:border-sky-700 dark:bg-sky-900/40 dark:text-sky-200">
+              <span>Portfolio Experience</span>
+              <span className="mx-1 text-sky-500/80 dark:text-sky-300/80">-</span>
+              <span className="normal-case tracking-normal">Hugo Alves Dutra</span>
+            </p>
+            <a
+              aria-label="Open Hugo Alves Dutra LinkedIn"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-sky-300 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100 dark:border-sky-700 dark:bg-sky-900/40 dark:text-sky-200 dark:hover:bg-sky-900/65"
+              href={LINKEDIN_PROFILE_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <svg
+                aria-hidden="true"
+                fill="currentColor"
+                height="14"
+                viewBox="0 0 24 24"
+                width="14"
+              >
+                <path d="M19 3A2.997 2.997 0 0 1 22 6v12a2.997 2.997 0 0 1-3 3H5a2.997 2.997 0 0 1-3-3V6a2.997 2.997 0 0 1 3-3h14Zm-.5 14.5V13c0-2.485-1.542-3.5-3.143-3.5-1.41 0-2.148.775-2.517 1.32V9h-2.7v8.5h2.7v-4.25c0-1.12.213-2.2 1.6-2.2 1.367 0 1.387 1.28 1.387 2.272V17.5h2.673ZM7 7.846a1.56 1.56 0 1 0 0-3.12 1.56 1.56 0 0 0 0 3.12Zm1.35 9.654V9H5.65v8.5h2.7Z" />
+              </svg>
+            </a>
+          </motion.div>
 
           <motion.div variants={motionItem}>
             <SectionTitle
@@ -171,6 +192,16 @@ export function LandingPage() {
 
         <motion.div className="w-full lg:justify-self-end" data-mode-grid variants={motionItem}>
           <div className="flex w-full flex-col gap-4 lg:items-end">
+            <ModeCard
+              to="/traditional"
+              className="w-full max-w-[25rem]"
+              tag="Mode 01"
+              title="Traditional"
+              description="Classic resume mode focused on clarity, SEO, and print output."
+              portraitSrc={MODE_01_PORTRAIT}
+              cardClassName="min-h-[320px]"
+            />
+
             <div className="relative w-full max-w-[25rem]">
               <div
                 data-gsap-glow
@@ -181,17 +212,9 @@ export function LandingPage() {
                 tag="Mode 02"
                 title="Adventure"
                 description="Interactive map with visual progression across professional experiences."
+                portraitSrc={MODE_02_PORTRAIT}
               />
             </div>
-
-            <ModeCard
-              to="/traditional"
-              className="w-full max-w-[25rem]"
-              tag="Mode 01"
-              title="Traditional"
-              description="Classic resume mode focused on clarity, SEO, and print output."
-              cardClassName="min-h-[320px]"
-            />
           </div>
         </motion.div>
       </motion.section>

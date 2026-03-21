@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { cn } from '../../../shared/utils/cn'
@@ -19,11 +19,17 @@ type AdventurePreviewProps = {
   title: string
   description: string
   tag: string
+  portraitSrc?: string
   className?: string
 }
 
-export function AdventurePreview({ to, title, description, tag, className }: AdventurePreviewProps) {
+export function AdventurePreview({ to, title, description, tag, portraitSrc, className }: AdventurePreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [hasPortrait, setHasPortrait] = useState(Boolean(portraitSrc))
+
+  useEffect(() => {
+    setHasPortrait(Boolean(portraitSrc))
+  }, [portraitSrc])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -142,6 +148,18 @@ export function AdventurePreview({ to, title, description, tag, className }: Adv
           <div className="absolute left-4 top-4 rounded-full border border-cyan-200/40 bg-cyan-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-100">
             {tag}
           </div>
+
+          {portraitSrc && hasPortrait ? (
+            <div className="absolute right-4 top-4 h-40 w-40 overflow-hidden rounded-2xl border border-cyan-100/35 bg-slate-900/70 shadow-[0_0_20px_rgba(34,211,238,0.24)]">
+              <img
+                alt={`${title} mode preview portrait`}
+                className="h-full w-full object-cover"
+                src={portraitSrc}
+                onError={() => setHasPortrait(false)}
+              />
+            </div>
+          ) : null}
+
           <div className="absolute inset-x-4 bottom-4 rounded-xl border border-cyan-100/20 bg-slate-950/45 px-4 py-3 backdrop-blur-[2px]">
             <h3 className="text-2xl font-semibold text-cyan-50">{title}</h3>
             <p className="mt-2 text-sm text-cyan-100/85">{description}</p>

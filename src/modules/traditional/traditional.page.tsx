@@ -18,10 +18,6 @@ export function TraditionalPage() {
   const theme = useAppStore((state) => state.theme)
   const toggleTheme = useAppStore((state) => state.toggleTheme)
 
-  const handlePrint = () => {
-    window.print()
-  }
-
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-6 py-12 print:max-w-none print:px-0 print:py-0">
       <header className="no-print flex items-center justify-between gap-4">
@@ -36,7 +32,6 @@ export function TraditionalPage() {
       <ResumeHeaderSection
         person={profileData.person}
         onToggleTheme={toggleTheme}
-        onPrint={handlePrint}
         themeLabel={theme === 'dark' ? 'dark' : 'light'}
       />
 

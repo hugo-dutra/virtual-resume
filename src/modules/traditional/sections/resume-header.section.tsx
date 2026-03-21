@@ -6,11 +6,12 @@ import { Button } from '../../../shared/ui/button'
 type ResumeHeaderSectionProps = {
   person: Person
   onToggleTheme: () => void
-  onPrint: () => void
   themeLabel: string
 }
 
-export function ResumeHeaderSection({ person, onToggleTheme, onPrint, themeLabel }: ResumeHeaderSectionProps) {
+const TRADITIONAL_AVATAR_SRC = resolvePublicAssetPath('/assets/profile/Hugo%20A%20Dutra.jfif')
+
+export function ResumeHeaderSection({ person, onToggleTheme, themeLabel }: ResumeHeaderSectionProps) {
   return (
     <section aria-labelledby="header-title" className="space-y-4">
       <Card className="print-card">
@@ -19,7 +20,7 @@ export function ResumeHeaderSection({ person, onToggleTheme, onPrint, themeLabel
             <img
               alt={person.avatarAlt}
               className="h-20 w-20 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-slate-700"
-              src={resolvePublicAssetPath('/favicon.svg')}
+              src={TRADITIONAL_AVATAR_SRC}
             />
             <div>
               <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{person.name}</h1>
@@ -31,9 +32,6 @@ export function ResumeHeaderSection({ person, onToggleTheme, onPrint, themeLabel
           <div className="flex flex-wrap gap-2 print:hidden">
             <Button variant="ghost" onClick={onToggleTheme}>
               Theme: {themeLabel}
-            </Button>
-            <Button variant="secondary" onClick={onPrint}>
-              Download PDF
             </Button>
           </div>
         </div>
