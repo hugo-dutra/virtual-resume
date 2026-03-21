@@ -25,6 +25,19 @@ type ObstacleSpec = {
   }
 }
 
+function isFiniteObstacle(obstacle: ObstacleSpec) {
+  return (
+    Number.isFinite(obstacle.position.x) &&
+    Number.isFinite(obstacle.position.z) &&
+    Number.isFinite(obstacle.size.x) &&
+    Number.isFinite(obstacle.size.y) &&
+    Number.isFinite(obstacle.size.z) &&
+    obstacle.size.x > 0 &&
+    obstacle.size.y > 0 &&
+    obstacle.size.z > 0
+  )
+}
+
 export function useAdventurePhysics(obstacles: ObstacleSpec[]): UseAdventurePhysicsResult {
   const world = useMemo(() => {
     const instance = new CANNON.World({ gravity: new CANNON.Vec3(0, 0, 0) })
@@ -88,7 +101,9 @@ export function useAdventurePhysics(obstacles: ObstacleSpec[]): UseAdventurePhys
   }, [world])
 
   useEffect(() => {
-    const nextObstacleBodies = obstacles.map((obstacle) => {
+    const validObstacles = obstacles.filter(isFiniteObstacle)
+
+    const nextObstacleBodies = validObstacles.map((obstacle) => {
       return new CANNON.Body({
         mass: 0,
         shape: new CANNON.Box(new CANNON.Vec3(obstacle.size.x / 2, obstacle.size.y / 2, obstacle.size.z / 2)),

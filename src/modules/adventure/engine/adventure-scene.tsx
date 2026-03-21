@@ -31,10 +31,25 @@ const PLAYER_REVERSE_DIRECTION_DOT_THRESHOLD = -0.2
 const PLAYER_REVERSE_STEER_SMOOTHNESS = 24
 const MIN_OBSTACLE_HEIGHT = PLAYER_RADIUS * 2 + 0.3
 const OBSTACLE_BOUNDS_EPSILON = 0.01
-const MAX_DYNAMIC_OBSTACLE_SIZE = MAP_SIZE * 2.5
+const MIN_DYNAMIC_OBSTACLE_SIZE = 0.1
+const MAX_DYNAMIC_OBSTACLE_SIZE = MAP_SIZE * 0.75
+const MAX_DYNAMIC_OBSTACLE_SHIFT = MAP_SIZE
 const INITIAL_CAMERA_ZOOM_FACTOR = 1.5
 
 type ObstacleBounds = {
+  position: {
+    x: number
+    z: number
+  }
+  size: {
+    x: number
+    y: number
+    z: number
+  }
+}
+
+type StaticObstacle = {
+  id: string
   position: {
     x: number
     z: number
@@ -117,6 +132,44 @@ function getRegionCoordinate(position: number) {
   return Math.floor((position + MAP_SIZE / 2) / REGION_SIZE)
 }
 
+function sanitizeDynamicObstacleBounds(
+  obstacle: StaticObstacle,
+  bounds: ObstacleBounds | null,
+): ObstacleBounds | null {
+  if (!bounds) {
+    return null
+  }
+
+  const hasInvalidPosition =
+    !Number.isFinite(bounds.position.x) || !Number.isFinite(bounds.position.z)
+  const hasInvalidSize =
+    !Number.isFinite(bounds.size.x) ||
+    !Number.isFinite(bounds.size.y) ||
+    !Number.isFinite(bounds.size.z)
+
+  if (hasInvalidPosition || hasInvalidSize) {
+    return null
+  }
+
+  const shiftX = Math.abs(bounds.position.x - obstacle.position.x)
+  const shiftZ = Math.abs(bounds.position.z - obstacle.position.z)
+  if (shiftX > MAX_DYNAMIC_OBSTACLE_SHIFT || shiftZ > MAX_DYNAMIC_OBSTACLE_SHIFT) {
+    return null
+  }
+
+  return {
+    position: {
+      x: bounds.position.x,
+      z: bounds.position.z,
+    },
+    size: {
+      x: THREE.MathUtils.clamp(bounds.size.x, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE),
+      y: THREE.MathUtils.clamp(bounds.size.y, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE),
+      z: THREE.MathUtils.clamp(bounds.size.z, MIN_DYNAMIC_OBSTACLE_SIZE, MAX_DYNAMIC_OBSTACLE_SIZE),
+    },
+  }
+}
+
 export function AdventureScene({
   hoveredBuildingId,
   selectedBuildingId,
@@ -135,7 +188,14 @@ export function AdventureScene({
   const allBuildings = useMemo(() => buildingsData.buildings, [])
   const educationPlaces = useMemo(() => educationPlacesData.places, [])
   const [dynamicObstacleBoundsById, setDynamicObstacleBoundsById] = useState<Record<string, ObstacleBounds>>({})
-  const staticObstacles = useMemo(() => [...allBuildings, ...educationPlaces], [allBuildings, educationPlaces])
+  const staticObstacles = useMemo<StaticObstacle[]>(
+    () => [...allBuildings, ...educationPlaces],
+    [allBuildings, educationPlaces],
+  )
+  const obstacleById = useMemo(
+    () => new Map(staticObstacles.map((obstacle) => [obstacle.id, obstacle])),
+    [staticObstacles],
+  )
   const allObstacles = useMemo(() => {
     return staticObstacles.map((obstacle) => {
       const dynamicBounds = dynamicObstacleBoundsById[obstacle.id]
@@ -143,37 +203,15 @@ export function AdventureScene({
         return obstacle
       }
 
-      const hasInvalidPosition =
-        !Number.isFinite(dynamicBounds.position.x) || !Number.isFinite(dynamicBounds.position.z)
-      if (hasInvalidPosition) {
-        return obstacle
-      }
-
-      const sizeX = THREE.MathUtils.clamp(
-        dynamicBounds.size.x,
-        0.1,
-        MAX_DYNAMIC_OBSTACLE_SIZE,
-      )
-      const sizeY = THREE.MathUtils.clamp(
-        dynamicBounds.size.y,
-        0.1,
-        MAX_DYNAMIC_OBSTACLE_SIZE,
-      )
-      const sizeZ = THREE.MathUtils.clamp(
-        dynamicBounds.size.z,
-        0.1,
-        MAX_DYNAMIC_OBSTACLE_SIZE,
-      )
-
       return {
         position: {
           x: dynamicBounds.position.x,
           z: dynamicBounds.position.z,
         },
         size: {
-          x: sizeX,
-          y: Math.max(sizeY, obstacle.size.y, MIN_OBSTACLE_HEIGHT),
-          z: sizeZ,
+          x: dynamicBounds.size.x,
+          y: Math.max(dynamicBounds.size.y, obstacle.size.y, MIN_OBSTACLE_HEIGHT),
+          z: dynamicBounds.size.z,
         },
       }
     })
@@ -274,18 +312,21 @@ export function AdventureScene({
   }, [])
   const handleObstacleBoundsChange = useCallback(
     (obstacleId: string, bounds: ObstacleBounds | null) => {
+      const staticObstacle = obstacleById.get(obstacleId)
+      const sanitizedBounds = staticObstacle ? sanitizeDynamicObstacleBounds(staticObstacle, bounds) : null
+
       if (onBuildingBoundsChange && buildingById.has(obstacleId)) {
         onBuildingBoundsChange(
           obstacleId,
-          bounds
+          sanitizedBounds
             ? {
                 position: {
-                  x: bounds.position.x,
-                  z: bounds.position.z,
+                  x: sanitizedBounds.position.x,
+                  z: sanitizedBounds.position.z,
                 },
                 size: {
-                  x: bounds.size.x,
-                  z: bounds.size.z,
+                  x: sanitizedBounds.size.x,
+                  z: sanitizedBounds.size.z,
                 },
               }
             : null,
@@ -295,7 +336,7 @@ export function AdventureScene({
       setDynamicObstacleBoundsById((currentBounds) => {
         const currentValue = currentBounds[obstacleId]
 
-        if (!bounds) {
+        if (!sanitizedBounds) {
           if (!currentValue) {
             return currentBounds
           }
@@ -305,17 +346,17 @@ export function AdventureScene({
           return nextBounds
         }
 
-        if (areObstacleBoundsEqual(currentValue, bounds)) {
+        if (areObstacleBoundsEqual(currentValue, sanitizedBounds)) {
           return currentBounds
         }
 
         return {
           ...currentBounds,
-          [obstacleId]: bounds,
+          [obstacleId]: sanitizedBounds,
         }
       })
     },
-    [buildingById, onBuildingBoundsChange],
+    [buildingById, obstacleById, onBuildingBoundsChange],
   )
 
   const syncHoveredBuilding = useCallback(
