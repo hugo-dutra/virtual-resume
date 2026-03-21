@@ -9,7 +9,7 @@ export function AdventurePostprocessing() {
         luminanceSmoothing={0.72}
         mipmapBlur
       />
-      <BrightnessContrast brightness={0.05} contrast={0.05} />
+      <BrightnessContrast brightness={0.08} contrast={0.05} />
       <Vignette darkness={0.28} offset={0.2} eskil={false} />
     </EffectComposer>
   )

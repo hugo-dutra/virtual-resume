@@ -6,7 +6,7 @@ const HALF_MAP_SIZE = MAP_SIZE / 2
 const HALF_GROUND_SIZE = GROUND_SIZE / 2
 const WALL_HEIGHT = 2
 const WALL_THICKNESS = 0.6
-const PLAYER_START_Z = HALF_MAP_SIZE - 8
+const PLAYER_START_Z = HALF_MAP_SIZE + 10
 
 type UseAdventurePhysicsResult = {
   world: CANNON.World

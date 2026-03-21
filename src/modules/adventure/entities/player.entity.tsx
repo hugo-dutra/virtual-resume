@@ -11,6 +11,7 @@ import { getAssetModelUrl, getPlayerAnimationUrls, resolveAssetTransform } from 
 import { PLAYER_RADIUS } from '../world/world.constants'
 
 type PlayerAnimationState = 'idle' | 'run'
+const RUN_MOVEMENT_SPEED_THRESHOLD = 0.08
 
 type PlayerEntityProps = {
   groupRef: MutableRefObject<Group | null>
@@ -37,6 +38,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
   const { offset, rotation, scale } = resolveAssetTransform(asset)
   const currentActionRef = useRef<AnimationAction | null>(null)
   const activeStateRef = useRef<PlayerAnimationState | null>(null)
+  const previousWorldPositionRef = useRef<THREE.Vector3 | null>(null)
 
   const resolvedModelScene = glbScene ?? idleFbxScene ?? runFbxScene
   const sourceAnimations =
@@ -143,7 +145,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
       }
 
       nextAction.setLoop(THREE.LoopRepeat, Infinity)
-      nextAction.setEffectiveTimeScale(0.80)
+      nextAction.setEffectiveTimeScale(resolvedState === 'run' ? 1.15 : 0.85)
       nextAction.setEffectiveWeight(1)
       nextAction.reset().fadeIn(0.12).play()
 
@@ -166,6 +168,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
     // Reset references so the current desired state is rebound to the latest action set.
     currentActionRef.current = null
     activeStateRef.current = null
+    previousWorldPositionRef.current = null
     const initialState: PlayerAnimationState = movementInputRef.current ? 'run' : 'idle'
     playState(initialState)
 
@@ -181,7 +184,22 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
       return
     }
 
-    const desiredState: PlayerAnimationState = movementInputRef.current ? 'run' : 'idle'
+    let movementSpeed = 0
+    const group = groupRef.current
+    if (group) {
+      if (previousWorldPositionRef.current) {
+        movementSpeed = group.position.distanceTo(previousWorldPositionRef.current)
+      }
+
+      if (previousWorldPositionRef.current) {
+        previousWorldPositionRef.current.copy(group.position)
+      } else {
+        previousWorldPositionRef.current = group.position.clone()
+      }
+    }
+
+    const isMoving = movementInputRef.current || movementSpeed > RUN_MOVEMENT_SPEED_THRESHOLD
+    const desiredState: PlayerAnimationState = isMoving ? 'run' : 'idle'
     if (activeStateRef.current !== desiredState) {
       playState(desiredState)
     }

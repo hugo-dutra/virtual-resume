@@ -20,6 +20,7 @@ import { PLAYER_RADIUS } from './world/world.constants'
 const PROXIMITY_AUTO_OPEN_DISTANCE = 4
 const PROXIMITY_AUTO_CLOSE_DISTANCE = 6
 const PROXIMITY_REOPEN_DELTA = 0.03
+const PROXIMITY_EDGE_BUFFER = 1.2
 const MARKER_BOUNDS_EPSILON = 0.01
 
 type DismissedTarget =
@@ -106,7 +107,7 @@ function getPlayerToBoxDistance(
   const centerToBuildingDistance = Math.hypot(deltaX, deltaZ)
 
   // Convert center-to-shape distance into surface-to-surface distance in meters.
-  return Math.max(centerToBuildingDistance - PLAYER_RADIUS, 0)
+  return Math.max(centerToBuildingDistance - PLAYER_RADIUS - PROXIMITY_EDGE_BUFFER, 0)
 }
 
 export function AdventurePage() {

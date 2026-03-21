@@ -64,7 +64,7 @@ export function AdventureCanvas({
         gl={{ antialias: true }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = 1.16
+          gl.toneMappingExposure = 1.24
           gl.outputColorSpace = THREE.SRGBColorSpace
         }}
         shadows
