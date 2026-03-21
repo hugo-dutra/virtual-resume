@@ -30,19 +30,19 @@ function findEmbeddedClip(animations: AnimationClip[], keywords: string[]) {
 
 export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntityProps) {
   const modelUrl = getAssetModelUrl(asset)
-  const { scene: glbScene, animations: glbAnimations } = useModelAsset(modelUrl)
   const animationUrls = useMemo(() => getPlayerAnimationUrls(asset), [asset])
-  const { scene: idleFbxScene, animations: idleFbxAnimations } = useFbxModelAsset(animationUrls.idle ?? null)
-  const { scene: runFbxScene, animations: runFbxAnimations } = useFbxModelAsset(animationUrls.run ?? null)
+  const fallbackFbxModelUrl = animationUrls.idle ?? animationUrls.run ?? null
+  const shouldLoadGlbModel = !fallbackFbxModelUrl
+  const { scene: glbScene, animations: glbAnimations } = useModelAsset(shouldLoadGlbModel ? modelUrl : null)
+  const { scene: fallbackFbxScene, animations: fallbackFbxAnimations } = useFbxModelAsset(fallbackFbxModelUrl)
   const externalClips = useExternalAnimationClips(animationUrls)
   const { offset, rotation, scale } = resolveAssetTransform(asset)
   const currentActionRef = useRef<AnimationAction | null>(null)
   const activeStateRef = useRef<PlayerAnimationState | null>(null)
   const previousWorldPositionRef = useRef<THREE.Vector3 | null>(null)
 
-  const resolvedModelScene = glbScene ?? idleFbxScene ?? runFbxScene
-  const sourceAnimations =
-    glbAnimations.length > 0 ? glbAnimations : idleFbxAnimations.length > 0 ? idleFbxAnimations : runFbxAnimations
+  const resolvedModelScene = glbScene ?? fallbackFbxScene
+  const sourceAnimations = glbAnimations.length > 0 ? glbAnimations : fallbackFbxAnimations
 
   const normalizedModelTransform = useMemo(() => {
     if (!resolvedModelScene) {

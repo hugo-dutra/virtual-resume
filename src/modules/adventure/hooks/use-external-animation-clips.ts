@@ -6,6 +6,9 @@ type AnimationState = 'idle' | 'walk' | 'run'
 
 const clipCache = new Map<string, THREE.AnimationClip | null>()
 const loadPromises = new Map<string, Promise<THREE.AnimationClip | null>>()
+const clipLoadFailureCount = new Map<string, number>()
+const MAX_CLIP_RETRY_ATTEMPTS = 2
+const CLIP_RETRY_DELAY_MS = 650
 
 function normalizeClipTracks(clip: THREE.AnimationClip) {
   const normalizedTracks = clip.tracks.map((track) => {
@@ -28,7 +31,17 @@ function normalizeClipTracks(clip: THREE.AnimationClip) {
 function loadClip(url: string) {
   const cached = clipCache.get(url)
   if (cached !== undefined) {
-    return Promise.resolve(cached)
+    const failureCount = clipLoadFailureCount.get(url) ?? 0
+    if (cached === null && failureCount < MAX_CLIP_RETRY_ATTEMPTS) {
+      clipCache.delete(url)
+    } else {
+      return Promise.resolve(cached)
+    }
+  }
+
+  const refreshedCached = clipCache.get(url)
+  if (refreshedCached !== undefined) {
+    return Promise.resolve(refreshedCached)
   }
 
   const pending = loadPromises.get(url)
@@ -43,12 +56,15 @@ function loadClip(url: string) {
       url,
       (fbx) => {
         const firstClip = fbx.animations[0] ? normalizeClipTracks(fbx.animations[0]) : null
+        clipLoadFailureCount.delete(url)
         clipCache.set(url, firstClip)
         loadPromises.delete(url)
         resolve(firstClip)
       },
       undefined,
       () => {
+        const nextFailureCount = (clipLoadFailureCount.get(url) ?? 0) + 1
+        clipLoadFailureCount.set(url, nextFailureCount)
         clipCache.set(url, null)
         loadPromises.delete(url)
         resolve(null)
@@ -67,15 +83,40 @@ function isDefined<T>(value: T | undefined | null): value is T {
 }
 
 export function useExternalAnimationClips(urls: ClipUrls): ClipMap {
-  const [, setRefreshToken] = useState(0)
+  const [refreshToken, setRefreshToken] = useState(0)
   const idleUrl = urls.idle
   const walkUrl = urls.walk
   const runUrl = urls.run
 
   useEffect(() => {
     let cancelled = false
+    const urlsToLoad = [idleUrl, walkUrl, runUrl].filter(isDefined)
+    const retryableFailedUrls = urlsToLoad.filter((url) => {
+      const isFailureCached = clipCache.get(url) === null
+      const failureCount = clipLoadFailureCount.get(url) ?? 0
+      return isFailureCached && failureCount < MAX_CLIP_RETRY_ATTEMPTS
+    })
 
-    const pendingLoads = [idleUrl, walkUrl, runUrl].filter(isDefined).map((url) => loadClip(url))
+    if (retryableFailedUrls.length > 0) {
+      const retryTimeoutId = window.setTimeout(() => {
+        for (const url of retryableFailedUrls) {
+          clipCache.delete(url)
+        }
+
+        if (cancelled) {
+          return
+        }
+
+        setRefreshToken((token) => token + 1)
+      }, CLIP_RETRY_DELAY_MS)
+
+      return () => {
+        cancelled = true
+        window.clearTimeout(retryTimeoutId)
+      }
+    }
+
+    const pendingLoads = urlsToLoad.map((url) => loadClip(url))
     if (pendingLoads.length === 0) {
       return
     }
@@ -91,7 +132,7 @@ export function useExternalAnimationClips(urls: ClipUrls): ClipMap {
     return () => {
       cancelled = true
     }
-  }, [idleUrl, runUrl, walkUrl])
+  }, [idleUrl, refreshToken, runUrl, walkUrl])
 
   const output: ClipMap = {}
 

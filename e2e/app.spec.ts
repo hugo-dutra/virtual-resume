@@ -22,10 +22,19 @@ test('traditional mode renders real resume sections', async ({ page }) => {
 })
 
 
-test('adventure mode renders hud and controls', async ({ page }) => {
+test('adventure mode boots without manual refresh', async ({ page }) => {
   await page.goto('/adventure')
 
   await expect(page.getByRole('heading', { name: /3d interactive map/i })).toBeVisible()
-  await expect(page.getByText(/wasd or arrow keys to move/i)).toBeVisible()
-  await expect(page.getByText(/interactive buildings/i)).toBeVisible()
+  await expect(page.getByText(/use\s*wasd.*arrow keys.*move/i)).toBeVisible()
+  await expect(page.getByText(/interactive map is a playful way/i)).toBeVisible()
+
+  const loadingOverlay = page.getByText(/loading adventure/i)
+  await expect(loadingOverlay).toBeHidden({ timeout: 20000 })
+  await expect(page.locator('canvas').first()).toBeVisible()
+
+  await page.reload()
+  await expect(page.getByRole('heading', { name: /3d interactive map/i })).toBeVisible()
+  await expect(loadingOverlay).toBeHidden({ timeout: 20000 })
+  await expect(page.locator('canvas').first()).toBeVisible()
 })

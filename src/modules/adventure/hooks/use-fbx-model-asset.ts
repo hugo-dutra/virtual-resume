@@ -13,6 +13,9 @@ type FbxModelTemplate = {
 
 const templateCache = new Map<string, FbxModelTemplate | null>()
 const loadPromises = new Map<string, Promise<FbxModelTemplate | null>>()
+const loadFailureCount = new Map<string, number>()
+const MAX_RETRY_ATTEMPTS = 2
+const RETRY_DELAY_MS = 650
 
 function prepareScene(scene: Group) {
   scene.traverse((object) => {
@@ -26,7 +29,17 @@ function prepareScene(scene: Group) {
 function loadTemplate(url: string): Promise<FbxModelTemplate | null> {
   const cached = templateCache.get(url)
   if (cached !== undefined) {
-    return Promise.resolve(cached)
+    const failureCount = loadFailureCount.get(url) ?? 0
+    if (cached === null && failureCount < MAX_RETRY_ATTEMPTS) {
+      templateCache.delete(url)
+    } else {
+      return Promise.resolve(cached)
+    }
+  }
+
+  const refreshedCached = templateCache.get(url)
+  if (refreshedCached !== undefined) {
+    return Promise.resolve(refreshedCached)
   }
 
   const pending = loadPromises.get(url)
@@ -41,6 +54,7 @@ function loadTemplate(url: string): Promise<FbxModelTemplate | null> {
       url,
       (fbx) => {
         prepareScene(fbx)
+        loadFailureCount.delete(url)
         const template: FbxModelTemplate = {
           scene: fbx,
           animations: fbx.animations,
@@ -51,6 +65,8 @@ function loadTemplate(url: string): Promise<FbxModelTemplate | null> {
       },
       undefined,
       () => {
+        const nextFailureCount = (loadFailureCount.get(url) ?? 0) + 1
+        loadFailureCount.set(url, nextFailureCount)
         templateCache.set(url, null)
         loadPromises.delete(url)
         resolve(null)
@@ -69,7 +85,7 @@ type UseFbxModelAssetResult = {
 }
 
 export function useFbxModelAsset(url: string | null): UseFbxModelAssetResult {
-  const [, setRefreshToken] = useState(0)
+  const [refreshToken, setRefreshToken] = useState(0)
 
   useEffect(() => {
     if (!url) {
@@ -78,8 +94,27 @@ export function useFbxModelAsset(url: string | null): UseFbxModelAssetResult {
 
     let cancelled = false
     const cached = templateCache.get(url)
+    const failureCount = loadFailureCount.get(url) ?? 0
+
+    if (cached === null && failureCount < MAX_RETRY_ATTEMPTS) {
+      const retryTimeoutId = window.setTimeout(() => {
+        templateCache.delete(url)
+        if (cancelled) {
+          return
+        }
+
+        setRefreshToken((token) => token + 1)
+      }, RETRY_DELAY_MS)
+
+      return () => {
+        cancelled = true
+        window.clearTimeout(retryTimeoutId)
+      }
+    }
+
+    const currentCached = templateCache.get(url)
     const pending = loadPromises.get(url)
-    const loadPromise = pending ?? (cached === undefined ? loadTemplate(url) : Promise.resolve(cached))
+    const loadPromise = pending ?? (currentCached === undefined ? loadTemplate(url) : Promise.resolve(currentCached))
 
     void loadPromise.then(() => {
       if (cancelled) {
@@ -92,7 +127,7 @@ export function useFbxModelAsset(url: string | null): UseFbxModelAssetResult {
     return () => {
       cancelled = true
     }
-  }, [url])
+  }, [refreshToken, url])
 
   const template = url ? templateCache.get(url) : undefined
   const scene = useMemo(() => {

@@ -13,6 +13,9 @@ type ModelTemplate = {
 
 const modelTemplateCache = new Map<string, ModelTemplate | null>()
 const modelLoadPromises = new Map<string, Promise<ModelTemplate | null>>()
+const modelLoadFailureCount = new Map<string, number>()
+const MAX_MODEL_RETRY_ATTEMPTS = 2
+const MODEL_RETRY_DELAY_MS = 650
 
 function cloneModelScene(scene: Group) {
   return cloneSkeleton(scene) as Group
@@ -30,7 +33,17 @@ function prepareModelScene(scene: Group) {
 function loadModelTemplate(url: string): Promise<ModelTemplate | null> {
   const cachedTemplate = modelTemplateCache.get(url)
   if (cachedTemplate !== undefined) {
-    return Promise.resolve(cachedTemplate)
+    const failureCount = modelLoadFailureCount.get(url) ?? 0
+    if (cachedTemplate === null && failureCount < MAX_MODEL_RETRY_ATTEMPTS) {
+      modelTemplateCache.delete(url)
+    } else {
+      return Promise.resolve(cachedTemplate)
+    }
+  }
+
+  const refreshedCachedTemplate = modelTemplateCache.get(url)
+  if (refreshedCachedTemplate !== undefined) {
+    return Promise.resolve(refreshedCachedTemplate)
   }
 
   const pendingLoad = modelLoadPromises.get(url)
@@ -45,6 +58,7 @@ function loadModelTemplate(url: string): Promise<ModelTemplate | null> {
       url,
       (gltf) => {
         prepareModelScene(gltf.scene)
+        modelLoadFailureCount.delete(url)
         modelTemplateCache.set(url, {
           scene: gltf.scene,
           animations: gltf.animations,
@@ -57,6 +71,8 @@ function loadModelTemplate(url: string): Promise<ModelTemplate | null> {
       },
       undefined,
       () => {
+        const nextFailureCount = (modelLoadFailureCount.get(url) ?? 0) + 1
+        modelLoadFailureCount.set(url, nextFailureCount)
         modelTemplateCache.set(url, null)
         modelLoadPromises.delete(url)
         resolve(null)
@@ -75,7 +91,7 @@ type UseModelAssetResult = {
 }
 
 export function useModelAsset(url: string | null): UseModelAssetResult {
-  const [, setRefreshToken] = useState(0)
+  const [refreshToken, setRefreshToken] = useState(0)
 
   useEffect(() => {
     if (!url) {
@@ -83,8 +99,26 @@ export function useModelAsset(url: string | null): UseModelAssetResult {
     }
 
     let cancelled = false
-    const pendingLoad = modelLoadPromises.get(url)
     const cachedTemplate = modelTemplateCache.get(url)
+    const failureCount = modelLoadFailureCount.get(url) ?? 0
+
+    if (cachedTemplate === null && failureCount < MAX_MODEL_RETRY_ATTEMPTS) {
+      const retryTimeoutId = window.setTimeout(() => {
+        modelTemplateCache.delete(url)
+        if (cancelled) {
+          return
+        }
+
+        setRefreshToken((currentToken) => currentToken + 1)
+      }, MODEL_RETRY_DELAY_MS)
+
+      return () => {
+        cancelled = true
+        window.clearTimeout(retryTimeoutId)
+      }
+    }
+
+    const pendingLoad = modelLoadPromises.get(url)
     const loadPromise =
       pendingLoad ?? (cachedTemplate === undefined ? loadModelTemplate(url) : Promise.resolve(cachedTemplate))
 
@@ -99,7 +133,7 @@ export function useModelAsset(url: string | null): UseModelAssetResult {
     return () => {
       cancelled = true
     }
-  }, [url])
+  }, [refreshToken, url])
 
   const template = url ? modelTemplateCache.get(url) : undefined
   const animations = useMemo(() => template?.animations ?? [], [template])

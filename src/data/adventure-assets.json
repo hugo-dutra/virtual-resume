@@ -7,7 +7,20 @@
       "relationId": "foton-informatica",
       "title": "Foton Tower Model",
       "description": "Represents the Foton Informatica experience in the interactive map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 30.0,
+          "y": 30.0,
+          "z": 30.0
+        },
+        "offset": {
+          "x": 6,
+          "y": 0,
+          "z": -8
+        },
+        "rotationY": 0
+      }
     },
     {
       "assetId": "building-ilia",
