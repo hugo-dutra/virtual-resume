@@ -1,8 +1,9 @@
-import { Suspense } from 'react'
+import { Suspense, type MutableRefObject } from 'react'
 import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import type { Building } from '../../../data/buildings.schema'
 import type { EducationPlace } from '../../../data/education-places.schema'
+import type { TouchMoveVector } from '../ui/adventure-touch-joystick'
 import { AdventureScene, type PlayerPosition } from './adventure-scene'
 
 type AdventureCanvasProps = {
@@ -41,6 +42,7 @@ type AdventureCanvasProps = {
       }
     } | null,
   ) => void
+  touchControlsRef: MutableRefObject<TouchMoveVector>
 }
 
 export function AdventureCanvas({
@@ -55,6 +57,7 @@ export function AdventureCanvas({
   onPlayerPositionChange,
   onBuildingBoundsChange,
   onEducationBoundsChange,
+  touchControlsRef,
 }: AdventureCanvasProps) {
   return (
     <div className="h-full w-full">
@@ -82,6 +85,7 @@ export function AdventureCanvas({
             onPlayerPositionChange={onPlayerPositionChange}
             onBuildingBoundsChange={onBuildingBoundsChange}
             onEducationBoundsChange={onEducationBoundsChange}
+            touchControlsRef={touchControlsRef}
           />
         </Suspense>
       </Canvas>

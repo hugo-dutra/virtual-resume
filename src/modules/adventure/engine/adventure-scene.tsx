@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { Group, Mesh } from 'three'
 import * as THREE from 'three'
@@ -13,6 +13,7 @@ import { EducationLandmarkEntity } from '../entities/education-landmark.entity'
 import { PlayerEntity } from '../entities/player.entity'
 import { useKeyboardControls } from '../hooks/use-keyboard-controls'
 import { useAdventurePhysics } from '../systems/use-adventure-physics'
+import type { TouchMoveVector } from '../ui/adventure-touch-joystick'
 import { AdventureGround } from '../world/adventure-ground'
 import { AdventureLighting } from '../world/adventure-lighting'
 import { AdventurePostprocessing } from '../world/adventure-postprocessing'
@@ -128,6 +129,7 @@ type AdventureSceneProps = {
       }
     } | null,
   ) => void
+  touchControlsRef?: MutableRefObject<TouchMoveVector>
 }
 
 function getRegionCoordinate(position: number) {
@@ -183,6 +185,7 @@ export function AdventureScene({
   onPlayerPositionChange,
   onBuildingBoundsChange,
   onEducationBoundsChange,
+  touchControlsRef,
 }: AdventureSceneProps) {
   const { camera, gl, pointer, raycaster } = useThree()
   const controlsRef = useKeyboardControls()
@@ -510,9 +513,16 @@ export function AdventureScene({
     }
 
     const controls = controlsRef.current
-    const axisX = Number(controls.right) - Number(controls.left)
-    const axisZ = Number(controls.backward) - Number(controls.forward)
-    const hasMovementInput = controls.forward || controls.backward || controls.left || controls.right
+    const touchControls = touchControlsRef?.current
+    const keyboardAxisX = Number(controls.right) - Number(controls.left)
+    const keyboardAxisZ = Number(controls.backward) - Number(controls.forward)
+    const touchAxisX = touchControls?.x ?? 0
+    const touchAxisZ = touchControls?.y ?? 0
+    const axisX = THREE.MathUtils.clamp(keyboardAxisX + touchAxisX, -1, 1)
+    const axisZ = THREE.MathUtils.clamp(keyboardAxisZ + touchAxisZ, -1, 1)
+    const keyboardHasMovementInput = controls.forward || controls.backward || controls.left || controls.right
+    const touchHasMovementInput = Math.abs(touchAxisX) > 0.04 || Math.abs(touchAxisZ) > 0.04
+    const hasMovementInput = keyboardHasMovementInput || touchHasMovementInput
     movementInputRef.current = hasMovementInput
 
     desiredDirectionVector.set(axisX, 0, axisZ)
@@ -534,7 +544,8 @@ export function AdventureScene({
     }
 
     if (hasDirection) {
-      const speed = controls.sprint ? PLAYER_BASE_SPEED * 1.35 : PLAYER_BASE_SPEED
+      const isSprintActive = controls.sprint || Boolean(touchControls?.sprint)
+      const speed = isSprintActive ? PLAYER_BASE_SPEED * 1.35 : PLAYER_BASE_SPEED
       movementVector.copy(smoothedDirectionVectorRef.current).multiplyScalar(speed)
       playerBody.wakeUp()
     } else {

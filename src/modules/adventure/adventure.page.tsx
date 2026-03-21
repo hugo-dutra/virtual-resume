@@ -15,6 +15,7 @@ import type { PlayerPosition } from './engine/adventure-scene'
 import { useAdventureAudio } from './hooks/use-adventure-audio'
 import { AdventureHud } from './ui/adventure-hud'
 import { AdventureLoadingOverlay } from './ui/adventure-loading-overlay'
+import { AdventureTouchJoystick, type TouchMoveVector } from './ui/adventure-touch-joystick'
 import { PLAYER_RADIUS } from './world/world.constants'
 
 const PROXIMITY_AUTO_OPEN_DISTANCE = 4
@@ -128,6 +129,11 @@ export function AdventurePage() {
   const [educationMarkerBoundsById, setEducationMarkerBoundsById] = useState<
     Record<string, EducationProximityBounds>
   >({})
+  const touchControlsRef = useRef<TouchMoveVector>({
+    x: 0,
+    y: 0,
+    sprint: false,
+  })
 
   useAdventureAudio(audioEnabled)
 
@@ -494,6 +500,10 @@ export function AdventurePage() {
     // Intentionally no-op: minimap is visual only without textual counters.
   }, [])
 
+  const handleTouchJoystickChange = useCallback((vector: TouchMoveVector) => {
+    touchControlsRef.current = vector
+  }, [])
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-6 py-10">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -530,6 +540,10 @@ export function AdventurePage() {
               <strong> mouse scroll</strong> to zoom the camera from close view to far overview.
             </p>
             <p>
+              On mobile, use the <strong>right-side joystick</strong> to move the character. Push it close to the edge
+              to sprint.
+            </p>
+            <p>
               <strong>How proximity works:</strong> info panels open automatically when you get close and close
               automatically when you move away. If you dismiss a panel while near a place (click outside or press
               <strong> Esc</strong>), it stays closed until you approach that place again.
@@ -552,6 +566,7 @@ export function AdventurePage() {
               onPlayerPositionChange={handlePlayerPositionChange}
               onBuildingBoundsChange={handleBuildingBoundsChange}
               onEducationBoundsChange={handleEducationBoundsChange}
+              touchControlsRef={touchControlsRef}
             />
             <AdventureHud
               hoveredBuildingId={hoveredBuildingId}
@@ -564,6 +579,7 @@ export function AdventurePage() {
               educationMarkerBoundsById={educationMarkerBoundsById}
               onEducationMarkerSelect={handleEducationMarkerSelect}
             />
+            <AdventureTouchJoystick onChange={handleTouchJoystickChange} />
           </div>
         </Card>
       </section>
