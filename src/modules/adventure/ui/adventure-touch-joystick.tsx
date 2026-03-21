@@ -35,37 +35,50 @@ export function AdventureTouchJoystick({ className, onChange }: AdventureTouchJo
 
     const touchQuery = window.matchMedia('(hover: none), (pointer: coarse)')
     const coarsePointerQuery = window.matchMedia('(any-pointer: coarse)')
+    const smallViewportQuery = window.matchMedia('(max-width: 1024px)')
     const mobileUserAgentPattern = /android|iphone|ipad|ipod|mobile/i
+
     const updateTouchDevice = () => {
-      const hasTouchApi = 'ontouchstart' in window || window.navigator.maxTouchPoints > 0
+      const hasTouchApi = window.navigator.maxTouchPoints > 0
       const hasCoarsePointer = touchQuery.matches || coarsePointerQuery.matches
       const hasMobileUserAgent = mobileUserAgentPattern.test(window.navigator.userAgent)
-      const hasMobileViewport = window.innerWidth <= 1024
-      setIsTouchDevice(hasTouchApi || hasCoarsePointer || hasMobileUserAgent || hasMobileViewport)
+      const hasMobileViewport = smallViewportQuery.matches
+      setIsTouchDevice(hasMobileViewport && (hasTouchApi || hasCoarsePointer || hasMobileUserAgent))
     }
 
     updateTouchDevice()
     if (
       typeof touchQuery.addEventListener === 'function' &&
-      typeof coarsePointerQuery.addEventListener === 'function'
+      typeof coarsePointerQuery.addEventListener === 'function' &&
+      typeof smallViewportQuery.addEventListener === 'function'
     ) {
       touchQuery.addEventListener('change', updateTouchDevice)
       coarsePointerQuery.addEventListener('change', updateTouchDevice)
+      smallViewportQuery.addEventListener('change', updateTouchDevice)
       window.addEventListener('resize', updateTouchDevice)
+      window.addEventListener('orientationchange', updateTouchDevice)
+
       return () => {
         touchQuery.removeEventListener('change', updateTouchDevice)
         coarsePointerQuery.removeEventListener('change', updateTouchDevice)
+        smallViewportQuery.removeEventListener('change', updateTouchDevice)
         window.removeEventListener('resize', updateTouchDevice)
+        window.removeEventListener('orientationchange', updateTouchDevice)
       }
     }
 
     touchQuery.addListener(updateTouchDevice)
     coarsePointerQuery.addListener(updateTouchDevice)
+    smallViewportQuery.addListener(updateTouchDevice)
     window.addEventListener('resize', updateTouchDevice)
+    window.addEventListener('orientationchange', updateTouchDevice)
+
     return () => {
       touchQuery.removeListener(updateTouchDevice)
       coarsePointerQuery.removeListener(updateTouchDevice)
+      smallViewportQuery.removeListener(updateTouchDevice)
       window.removeEventListener('resize', updateTouchDevice)
+      window.removeEventListener('orientationchange', updateTouchDevice)
     }
   }, [])
 
