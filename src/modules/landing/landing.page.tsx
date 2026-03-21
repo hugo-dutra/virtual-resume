@@ -93,7 +93,7 @@ export function LandingPage() {
       <motion.section
         ref={heroRef}
         animate="visible"
-        className="grid w-full gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center"
+        className="grid w-full gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start"
         initial="hidden"
         variants={motionContainer}
       >
@@ -166,28 +166,32 @@ export function LandingPage() {
             </Button>
           </motion.div>
 
-          <motion.div className="grid gap-4 sm:grid-cols-2" data-mode-grid variants={motionItem}>
+        </div>
+
+        <motion.div className="w-full lg:justify-self-end" data-mode-grid variants={motionItem}>
+          <div className="flex w-full flex-col gap-4 lg:items-end">
+            <div className="relative w-full max-w-[25rem]">
+              <div
+                data-gsap-glow
+                className="pointer-events-none absolute -inset-4 -z-10 rounded-[28px] bg-gradient-to-r from-cyan-300/30 via-sky-300/30 to-blue-300/30 blur-2xl"
+              />
+              <AdventurePreview
+                to="/adventure"
+                tag="Mode 02"
+                title="Adventure"
+                description="Interactive map with visual progression across professional experiences."
+              />
+            </div>
+
             <ModeCard
               to="/traditional"
+              className="w-full max-w-[25rem]"
               tag="Mode 01"
               title="Traditional"
               description="Classic resume mode focused on clarity, SEO, and print output."
+              cardClassName="min-h-[320px]"
             />
-            <ModeCard
-              to="/adventure"
-              tag="Mode 02"
-              title="Adventure"
-              description="Interactive map with visual progression across professional experiences."
-            />
-          </motion.div>
-        </div>
-
-        <motion.div className="relative" variants={motionItem}>
-          <div
-            data-gsap-glow
-            className="pointer-events-none absolute -inset-4 -z-10 rounded-[28px] bg-gradient-to-r from-cyan-300/30 via-sky-300/30 to-blue-300/30 blur-2xl"
-          />
-          <AdventurePreview />
+          </div>
         </motion.div>
       </motion.section>
     </main>

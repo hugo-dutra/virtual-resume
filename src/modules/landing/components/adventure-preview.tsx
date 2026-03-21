@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { cn } from '../../../shared/utils/cn'
 
 type Particle = {
   x: number
@@ -11,7 +14,15 @@ type Particle = {
 
 const PARTICLE_COUNT = 26
 
-export function AdventurePreview() {
+type AdventurePreviewProps = {
+  to: string
+  title: string
+  description: string
+  tag: string
+  className?: string
+}
+
+export function AdventurePreview({ to, title, description, tag, className }: AdventurePreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
@@ -114,21 +125,29 @@ export function AdventurePreview() {
   }, [])
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-sky-200/60 bg-slate-900 shadow-2xl">
-      <canvas
-        ref={canvasRef}
-        aria-hidden="true"
-        className="block h-72 w-full sm:h-80"
-      />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/55 via-transparent to-transparent" />
-      <div className="absolute left-4 top-4 rounded-full border border-cyan-200/40 bg-cyan-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-100">
-        Adventure Preview
-      </div>
-      <div className="absolute bottom-4 left-4 right-4 grid grid-cols-3 gap-2 text-center text-[10px] font-semibold uppercase tracking-wide text-cyan-100">
-        <span className="rounded-md border border-cyan-200/25 bg-slate-950/35 px-2 py-2">City Hub</span>
-        <span className="rounded-md border border-cyan-200/25 bg-slate-950/35 px-2 py-2">Quest Nodes</span>
-        <span className="rounded-md border border-cyan-200/25 bg-slate-950/35 px-2 py-2">XP Timeline</span>
-      </div>
-    </div>
+    <motion.div className={className} whileHover={{ y: -6 }} whileTap={{ scale: 0.99 }}>
+      <Link className="group block h-full" to={to}>
+        <article
+          className={cn(
+            'relative h-full overflow-hidden rounded-2xl border border-sky-200/60 bg-slate-900 shadow-2xl',
+            'ring-1 ring-transparent transition-shadow duration-300 group-hover:ring-cyan-200/45',
+          )}
+        >
+          <canvas
+            ref={canvasRef}
+            aria-hidden="true"
+            className="block h-full min-h-[320px] w-full"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/25 to-transparent" />
+          <div className="absolute left-4 top-4 rounded-full border border-cyan-200/40 bg-cyan-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-100">
+            {tag}
+          </div>
+          <div className="absolute inset-x-4 bottom-4 rounded-xl border border-cyan-100/20 bg-slate-950/45 px-4 py-3 backdrop-blur-[2px]">
+            <h3 className="text-2xl font-semibold text-cyan-50">{title}</h3>
+            <p className="mt-2 text-sm text-cyan-100/85">{description}</p>
+          </div>
+        </article>
+      </Link>
+    </motion.div>
   )
 }
