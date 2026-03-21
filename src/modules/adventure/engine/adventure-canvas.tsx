@@ -15,6 +15,19 @@ type AdventureCanvasProps = {
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
   onPlayerPositionChange: (position: PlayerPosition) => void
+  onBuildingBoundsChange: (
+    buildingId: string,
+    bounds: {
+      position: {
+        x: number
+        z: number
+      }
+      size: {
+        x: number
+        z: number
+      }
+    } | null,
+  ) => void
   onEducationBoundsChange: (
     placeId: string,
     bounds: {
@@ -40,6 +53,7 @@ export function AdventureCanvas({
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
   onPlayerPositionChange,
+  onBuildingBoundsChange,
   onEducationBoundsChange,
 }: AdventureCanvasProps) {
   return (
@@ -50,7 +64,7 @@ export function AdventureCanvas({
         gl={{ antialias: true }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = 1.06
+          gl.toneMappingExposure = 1.16
           gl.outputColorSpace = THREE.SRGBColorSpace
         }}
         shadows
@@ -66,6 +80,7 @@ export function AdventureCanvas({
             onHoveredBuildingChange={onHoveredBuildingChange}
             onActiveBuildingCountChange={onActiveBuildingCountChange}
             onPlayerPositionChange={onPlayerPositionChange}
+            onBuildingBoundsChange={onBuildingBoundsChange}
             onEducationBoundsChange={onEducationBoundsChange}
           />
         </Suspense>

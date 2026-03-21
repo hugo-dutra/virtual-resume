@@ -44,6 +44,17 @@ type EducationProximityBounds = {
   }
 }
 
+type BuildingProximityBounds = {
+  position: {
+    x: number
+    z: number
+  }
+  size: {
+    x: number
+    z: number
+  }
+}
+
 function getPlayerToBoxDistance(
   position: PlayerPosition,
   box: {
@@ -104,6 +115,7 @@ export function AdventurePage() {
   const selectedEducationPlaceRef = useRef<EducationPlace | undefined>(selectedEducationPlace)
   const dismissedTargetRef = useRef<DismissedTarget | null>(null)
   const educationBoundsByIdRef = useRef<Map<string, EducationProximityBounds>>(new Map())
+  const buildingBoundsByIdRef = useRef<Map<string, BuildingProximityBounds>>(new Map())
 
   useEffect(() => {
     activeExperienceIdRef.current = activeExperienceId
@@ -140,6 +152,24 @@ export function AdventurePage() {
     educationBoundsByIdRef.current.delete(placeId)
   }, [])
 
+  const handleBuildingBoundsChange = useCallback((buildingId: string, bounds: BuildingProximityBounds | null) => {
+    if (bounds) {
+      buildingBoundsByIdRef.current.set(buildingId, bounds)
+      return
+    }
+
+    buildingBoundsByIdRef.current.delete(buildingId)
+  }, [])
+
+  const getBuildingDistance = useCallback((position: PlayerPosition, building: Building) => {
+    const dynamicBounds = buildingBoundsByIdRef.current.get(building.id)
+    if (!dynamicBounds) {
+      return getPlayerToBoxDistance(position, building)
+    }
+
+    return getPlayerToBoxDistance(position, dynamicBounds)
+  }, [])
+
   const getEducationDistance = useCallback((position: PlayerPosition, place: EducationPlace) => {
     const dynamicBounds = educationBoundsByIdRef.current.get(place.id)
     if (!dynamicBounds) {
@@ -162,7 +192,7 @@ export function AdventurePage() {
       dismissedTargetRef.current = {
         kind: 'building',
         id: currentSelectedBuilding.id,
-        lastDistance: getPlayerToBoxDistance(playerPosition, currentSelectedBuilding),
+        lastDistance: getBuildingDistance(playerPosition, currentSelectedBuilding),
       }
     } else if (currentSelectedEducationPlace) {
       dismissedTargetRef.current = {
@@ -179,7 +209,7 @@ export function AdventurePage() {
     selectedBuildingRef.current = undefined
     selectedEducationPlaceRef.current = undefined
     clearActiveSelection()
-  }, [clearActiveSelection, getEducationDistance, playerPosition])
+  }, [clearActiveSelection, getBuildingDistance, getEducationDistance, playerPosition])
 
   const handleEducationMarkerSelect = useCallback(
     (placeId: string) => {
@@ -211,7 +241,7 @@ export function AdventurePage() {
       let nearestBuildingDistance = Number.POSITIVE_INFINITY
 
       for (const building of allBuildings) {
-        const distance = getPlayerToBoxDistance(position, building)
+        const distance = getBuildingDistance(position, building)
         if (distance < nearestBuildingDistance) {
           nearestBuildingDistance = distance
           nearestBuilding = building
@@ -244,7 +274,7 @@ export function AdventurePage() {
           if (!dismissedBuilding) {
             dismissedTargetRef.current = null
           } else {
-            const currentDistance = getPlayerToBoxDistance(position, dismissedBuilding)
+            const currentDistance = getBuildingDistance(position, dismissedBuilding)
             dismissedTargetMovedCloser = currentDistance < previousDistance - PROXIMITY_REOPEN_DELTA
             dismissedTarget.lastDistance = currentDistance
           }
@@ -320,7 +350,7 @@ export function AdventurePage() {
       }
 
       if (currentSelectedBuilding) {
-        const distanceToSelectedBuilding = getPlayerToBoxDistance(position, currentSelectedBuilding)
+        const distanceToSelectedBuilding = getBuildingDistance(position, currentSelectedBuilding)
         if (distanceToSelectedBuilding > PROXIMITY_AUTO_CLOSE_DISTANCE) {
           dismissedTargetRef.current = null
           activeExperienceIdRef.current = null
@@ -352,6 +382,7 @@ export function AdventurePage() {
       buildingById,
       clearActiveSelection,
       educationPlaceById,
+      getBuildingDistance,
       getEducationDistance,
       handleBuildingSelect,
       handleEducationSelect,
@@ -419,6 +450,7 @@ export function AdventurePage() {
               onHoveredBuildingChange={setHoveredBuildingId}
               onActiveBuildingCountChange={handleActiveBuildingCountChange}
               onPlayerPositionChange={handlePlayerPositionChange}
+              onBuildingBoundsChange={handleBuildingBoundsChange}
               onEducationBoundsChange={handleEducationBoundsChange}
             />
             <AdventureHud

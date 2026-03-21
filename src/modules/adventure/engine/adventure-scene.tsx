@@ -31,8 +31,8 @@ const PLAYER_REVERSE_DIRECTION_DOT_THRESHOLD = -0.2
 const PLAYER_REVERSE_STEER_SMOOTHNESS = 24
 const MIN_OBSTACLE_HEIGHT = PLAYER_RADIUS * 2 + 0.3
 const OBSTACLE_BOUNDS_EPSILON = 0.01
-const MAX_OBSTACLE_SIZE_MULTIPLIER = 4
-const MAX_OBSTACLE_SHIFT_MULTIPLIER = 2
+const MAX_DYNAMIC_OBSTACLE_SIZE = MAP_SIZE * 2.5
+const INITIAL_CAMERA_ZOOM_FACTOR = 1.5
 
 type ObstacleBounds = {
   position: {
@@ -85,6 +85,19 @@ type AdventureSceneProps = {
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
   onPlayerPositionChange: (position: PlayerPosition) => void
+  onBuildingBoundsChange?: (
+    buildingId: string,
+    bounds: {
+      position: {
+        x: number
+        z: number
+      }
+      size: {
+        x: number
+        z: number
+      }
+    } | null,
+  ) => void
   onEducationBoundsChange?: (
     placeId: string,
     bounds: {
@@ -114,6 +127,7 @@ export function AdventureScene({
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
   onPlayerPositionChange,
+  onBuildingBoundsChange,
   onEducationBoundsChange,
 }: AdventureSceneProps) {
   const { camera, gl, pointer, raycaster } = useThree()
@@ -129,29 +143,26 @@ export function AdventureScene({
         return obstacle
       }
 
-      const maxShiftX = obstacle.size.x * MAX_OBSTACLE_SHIFT_MULTIPLIER
-      const maxShiftZ = obstacle.size.z * MAX_OBSTACLE_SHIFT_MULTIPLIER
-      const shiftX = Math.abs(dynamicBounds.position.x - obstacle.position.x)
-      const shiftZ = Math.abs(dynamicBounds.position.z - obstacle.position.z)
-
-      if (shiftX > maxShiftX || shiftZ > maxShiftZ) {
+      const hasInvalidPosition =
+        !Number.isFinite(dynamicBounds.position.x) || !Number.isFinite(dynamicBounds.position.z)
+      if (hasInvalidPosition) {
         return obstacle
       }
 
       const sizeX = THREE.MathUtils.clamp(
         dynamicBounds.size.x,
         0.1,
-        obstacle.size.x * MAX_OBSTACLE_SIZE_MULTIPLIER,
+        MAX_DYNAMIC_OBSTACLE_SIZE,
       )
       const sizeY = THREE.MathUtils.clamp(
         dynamicBounds.size.y,
         0.1,
-        obstacle.size.y * MAX_OBSTACLE_SIZE_MULTIPLIER,
+        MAX_DYNAMIC_OBSTACLE_SIZE,
       )
       const sizeZ = THREE.MathUtils.clamp(
         dynamicBounds.size.z,
         0.1,
-        obstacle.size.z * MAX_OBSTACLE_SIZE_MULTIPLIER,
+        MAX_DYNAMIC_OBSTACLE_SIZE,
       )
 
       return {
@@ -179,8 +190,8 @@ export function AdventureScene({
   const activeRegionRef = useRef(activeRegion)
   const movementInputRef = useRef(false)
   const hudUpdateAccumulatorRef = useRef(0)
-  const cameraZoomFactorRef = useRef(1)
-  const targetCameraZoomFactorRef = useRef(1)
+  const cameraZoomFactorRef = useRef(INITIAL_CAMERA_ZOOM_FACTOR)
+  const targetCameraZoomFactorRef = useRef(INITIAL_CAMERA_ZOOM_FACTOR)
 
   const clickPointer = useMemo(() => new THREE.Vector2(), [])
   const cameraOffset = useMemo(
@@ -261,30 +272,51 @@ export function AdventureScene({
 
     delete interactiveMeshesRef.current[buildingId]
   }, [])
-  const handleObstacleBoundsChange = useCallback((obstacleId: string, bounds: ObstacleBounds | null) => {
-    setDynamicObstacleBoundsById((currentBounds) => {
-      const currentValue = currentBounds[obstacleId]
+  const handleObstacleBoundsChange = useCallback(
+    (obstacleId: string, bounds: ObstacleBounds | null) => {
+      if (onBuildingBoundsChange && buildingById.has(obstacleId)) {
+        onBuildingBoundsChange(
+          obstacleId,
+          bounds
+            ? {
+                position: {
+                  x: bounds.position.x,
+                  z: bounds.position.z,
+                },
+                size: {
+                  x: bounds.size.x,
+                  z: bounds.size.z,
+                },
+              }
+            : null,
+        )
+      }
 
-      if (!bounds) {
-        if (!currentValue) {
+      setDynamicObstacleBoundsById((currentBounds) => {
+        const currentValue = currentBounds[obstacleId]
+
+        if (!bounds) {
+          if (!currentValue) {
+            return currentBounds
+          }
+
+          const nextBounds = { ...currentBounds }
+          delete nextBounds[obstacleId]
+          return nextBounds
+        }
+
+        if (areObstacleBoundsEqual(currentValue, bounds)) {
           return currentBounds
         }
 
-        const nextBounds = { ...currentBounds }
-        delete nextBounds[obstacleId]
-        return nextBounds
-      }
-
-      if (areObstacleBoundsEqual(currentValue, bounds)) {
-        return currentBounds
-      }
-
-      return {
-        ...currentBounds,
-        [obstacleId]: bounds,
-      }
-    })
-  }, [])
+        return {
+          ...currentBounds,
+          [obstacleId]: bounds,
+        }
+      })
+    },
+    [buildingById, onBuildingBoundsChange],
+  )
 
   const syncHoveredBuilding = useCallback(
     (buildingId: string | null) => {
@@ -332,7 +364,11 @@ export function AdventureScene({
   )
 
   useEffect(() => {
-    camera.position.set(CAMERA_FOLLOW_OFFSET.x, CAMERA_FOLLOW_OFFSET.y, CAMERA_FOLLOW_OFFSET.z)
+    camera.position.set(
+      CAMERA_FOLLOW_OFFSET.x * INITIAL_CAMERA_ZOOM_FACTOR,
+      CAMERA_FOLLOW_OFFSET.y * INITIAL_CAMERA_ZOOM_FACTOR,
+      CAMERA_FOLLOW_OFFSET.z * INITIAL_CAMERA_ZOOM_FACTOR,
+    )
   }, [camera])
 
   useEffect(() => {
@@ -525,7 +561,7 @@ export function AdventureScene({
   return (
     <>
       <color attach="background" args={['#020617']} />
-      <fog attach="fog" args={['#020617', 18, 70]} />
+      <fog attach="fog" args={['#0b1324', 24, 96]} />
 
       <AdventureLighting followTargetRef={playerGroupRef} />
       <AdventureGround asset={groundAsset} />
