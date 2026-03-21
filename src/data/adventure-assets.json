@@ -15,7 +15,32 @@
       "relationId": "ilia",
       "title": "Ilia Hub Model",
       "description": "Represents the Ilia experience in the interactive map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 30.0,
+          "y": 30.0,
+          "z": 30.0
+        },
+        "offset": {
+          "x": -10,
+          "y": 0,
+          "z": -10
+        },
+        "rotationY": -55,
+        "collision": {
+          "scale": {
+            "x": 0.72,
+            "y": 1.0,
+            "z": 0.72
+          },
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
     },
     {
       "assetId": "building-seedf",
