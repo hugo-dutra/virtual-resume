@@ -36,14 +36,14 @@ export function AdventureLighting({ followTargetRef }: AdventureLightingProps) {
 
   return (
     <>
-      <ambientLight intensity={0.54} color="#dbeafe" />
-      <hemisphereLight intensity={0.42} color="#93c5fd" groundColor="#0b3b19" />
+      <ambientLight intensity={0.62} color="#dbeafe" />
+      <hemisphereLight intensity={0.52} color="#93c5fd" groundColor="#0b3b19" />
       <object3D ref={shadowTargetRef} />
 
       <directionalLight
         ref={lightRef}
         castShadow
-        intensity={1.32}
+        intensity={1.42}
         position={[LIGHT_OFFSET.x, LIGHT_OFFSET.y, LIGHT_OFFSET.z]}
         color="#f1f5f9"
         shadow-mapSize-height={4096}

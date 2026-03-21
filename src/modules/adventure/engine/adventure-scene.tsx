@@ -16,6 +16,7 @@ import { useAdventurePhysics } from '../systems/use-adventure-physics'
 import type { TouchMoveVector } from '../ui/adventure-touch-joystick'
 import { AdventureGround } from '../world/adventure-ground'
 import { AdventureLighting } from '../world/adventure-lighting'
+import { AdventurePerimeterWall, getPerimeterWallObstacles } from '../world/adventure-perimeter-wall'
 import { AdventurePostprocessing } from '../world/adventure-postprocessing'
 import {
   ACTIVE_REGION_RADIUS,
@@ -37,7 +38,9 @@ const MIN_DYNAMIC_OBSTACLE_SIZE = 0.1
 const HALF_GROUND_SIZE = GROUND_SIZE / 2
 const DYNAMIC_OBSTACLE_EDGE_MARGIN = 0.5
 const MAX_DYNAMIC_OBSTACLE_SIZE = GROUND_SIZE - DYNAMIC_OBSTACLE_EDGE_MARGIN * 2
-const INITIAL_CAMERA_ZOOM_FACTOR = 1.8
+const MIN_CAMERA_ZOOM_FACTOR = 1
+const MAX_CAMERA_ZOOM_FACTOR = 3
+const INITIAL_CAMERA_ZOOM_FACTOR = MAX_CAMERA_ZOOM_FACTOR
 
 type ObstacleBounds = {
   position: {
@@ -197,12 +200,13 @@ export function AdventureScene({
     () => [...allBuildings, ...educationPlaces],
     [allBuildings, educationPlaces],
   )
+  const perimeterWallObstacles = useMemo(() => getPerimeterWallObstacles(), [])
   const obstacleById = useMemo(
     () => new Map(staticObstacles.map((obstacle) => [obstacle.id, obstacle])),
     [staticObstacles],
   )
   const allObstacles = useMemo(() => {
-    return staticObstacles.map((obstacle) => {
+    const dynamicAwareObstacles = staticObstacles.map((obstacle) => {
       const dynamicBounds = dynamicObstacleBoundsById[obstacle.id]
       if (!dynamicBounds) {
         return obstacle
@@ -220,7 +224,9 @@ export function AdventureScene({
         },
       }
     })
-  }, [dynamicObstacleBoundsById, staticObstacles])
+
+    return [...dynamicAwareObstacles, ...perimeterWallObstacles]
+  }, [dynamicObstacleBoundsById, perimeterWallObstacles, staticObstacles])
   const allAssets = useMemo(() => adventureAssetsData.assets, [])
   const { world, playerBodyRef } = useAdventurePhysics(allObstacles)
 
@@ -483,7 +489,11 @@ export function AdventureScene({
 
       event.preventDefault()
       const zoomDelta = event.deltaY * 0.0015
-      targetCameraZoomFactorRef.current = THREE.MathUtils.clamp(targetCameraZoomFactorRef.current + zoomDelta, 1, 3)
+      targetCameraZoomFactorRef.current = THREE.MathUtils.clamp(
+        targetCameraZoomFactorRef.current + zoomDelta,
+        MIN_CAMERA_ZOOM_FACTOR,
+        MAX_CAMERA_ZOOM_FACTOR,
+      )
     }
 
     canvasElement.addEventListener('pointerenter', handlePointerEnter)
@@ -617,11 +627,11 @@ export function AdventureScene({
 
   return (
     <>
-      <color attach="background" args={['#020617']} />
-      <fog attach="fog" args={['#0b1324', 24, 96]} />
+      <color attach="background" args={['#081a2b']} />
 
       <AdventureLighting followTargetRef={playerGroupRef} />
       <AdventureGround asset={groundAsset} />
+      <AdventurePerimeterWall />
       <PlayerEntity
         groupRef={playerGroupRef}
         asset={playerAsset}
