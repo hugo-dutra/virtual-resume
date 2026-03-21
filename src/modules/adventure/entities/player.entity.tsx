@@ -98,15 +98,29 @@ export function PlayerEntity({
       run: findEmbeddedClip(sourceAnimations, ['run', 'sprint', 'jog']) ?? sourceAnimations[1] ?? firstClip,
     }
   }, [sourceAnimations])
+  const requiresExternalIdleClip = Boolean(animationUrls.idle)
+  const requiresExternalRunClip = Boolean(animationUrls.run)
+  const areRequiredExternalClipsReady =
+    (!requiresExternalIdleClip || Boolean(externalClips.idle)) &&
+    (!requiresExternalRunClip || Boolean(externalClips.run))
 
   const resolvedClips = useMemo(() => {
-    const idle = externalClips.idle ?? embeddedClips.idle
-    const run = externalClips.run ?? embeddedClips.run ?? idle
+    const idle = requiresExternalIdleClip ? externalClips.idle : externalClips.idle ?? embeddedClips.idle
+    const run = requiresExternalRunClip
+      ? externalClips.run
+      : externalClips.run ?? embeddedClips.run ?? idle
     return { idle, run }
-  }, [embeddedClips.idle, embeddedClips.run, externalClips.idle, externalClips.run])
+  }, [
+    embeddedClips.idle,
+    embeddedClips.run,
+    externalClips.idle,
+    externalClips.run,
+    requiresExternalIdleClip,
+    requiresExternalRunClip,
+  ])
 
   const animationSet = useMemo(() => {
-    if (!resolvedModelScene) {
+    if (!resolvedModelScene || !areRequiredExternalClipsReady) {
       return []
     }
 
@@ -127,7 +141,7 @@ export function PlayerEntity({
     }
 
     return set
-  }, [resolvedClips.idle, resolvedClips.run, resolvedModelScene])
+  }, [areRequiredExternalClipsReady, resolvedClips.idle, resolvedClips.run, resolvedModelScene])
 
   const { actions } = useAnimations(animationSet, resolvedModelScene ?? undefined)
   const hasRequiredAnimationActions = Boolean(actions['state-idle']) && Boolean(actions['state-run'])
