@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, type MutableRefObject } from 'react'
 import * as CANNON from 'cannon-es'
-import { MAP_SIZE, PLAYER_RADIUS } from '../world/world.constants'
+import { GROUND_SIZE, MAP_SIZE, PLAYER_RADIUS } from '../world/world.constants'
 
 const HALF_MAP_SIZE = MAP_SIZE / 2
+const HALF_GROUND_SIZE = GROUND_SIZE / 2
 const WALL_HEIGHT = 2
 const WALL_THICKNESS = 0.6
 const PLAYER_START_Z = HALF_MAP_SIZE - 8
@@ -35,10 +36,10 @@ export function useAdventurePhysics(obstacles: ObstacleSpec[]): UseAdventurePhys
   }, [])
 
   const playerBodyRef = useRef<CANNON.Body | null>(null)
+  const obstacleBodiesRef = useRef<CANNON.Body[]>([])
+  const wallBodiesRef = useRef<CANNON.Body[]>([])
 
   useEffect(() => {
-    const bodies: CANNON.Body[] = []
-
     const playerBody = new CANNON.Body({
       mass: 1,
       shape: new CANNON.Sphere(PLAYER_RADIUS),
@@ -52,25 +53,15 @@ export function useAdventurePhysics(obstacles: ObstacleSpec[]): UseAdventurePhys
     playerBody.updateMassProperties()
     world.addBody(playerBody)
     playerBodyRef.current = playerBody
-    bodies.push(playerBody)
-
-    for (const obstacle of obstacles) {
-      const body = new CANNON.Body({
-        mass: 0,
-        shape: new CANNON.Box(new CANNON.Vec3(obstacle.size.x / 2, obstacle.size.y / 2, obstacle.size.z / 2)),
-        position: new CANNON.Vec3(obstacle.position.x, obstacle.size.y / 2, obstacle.position.z),
-      })
-
-      world.addBody(body)
-      bodies.push(body)
-    }
 
     const walls = [
-      { x: HALF_MAP_SIZE, z: 0, sx: WALL_THICKNESS, sz: HALF_MAP_SIZE },
-      { x: -HALF_MAP_SIZE, z: 0, sx: WALL_THICKNESS, sz: HALF_MAP_SIZE },
-      { x: 0, z: HALF_MAP_SIZE, sx: HALF_MAP_SIZE, sz: WALL_THICKNESS },
-      { x: 0, z: -HALF_MAP_SIZE, sx: HALF_MAP_SIZE, sz: WALL_THICKNESS },
+      { x: HALF_GROUND_SIZE, z: 0, sx: WALL_THICKNESS, sz: HALF_GROUND_SIZE },
+      { x: -HALF_GROUND_SIZE, z: 0, sx: WALL_THICKNESS, sz: HALF_GROUND_SIZE },
+      { x: 0, z: HALF_GROUND_SIZE, sx: HALF_GROUND_SIZE, sz: WALL_THICKNESS },
+      { x: 0, z: -HALF_GROUND_SIZE, sx: HALF_GROUND_SIZE, sz: WALL_THICKNESS },
     ]
+
+    const wallBodies: CANNON.Body[] = []
 
     for (const wall of walls) {
       const wallBody = new CANNON.Body({
@@ -80,14 +71,45 @@ export function useAdventurePhysics(obstacles: ObstacleSpec[]): UseAdventurePhys
       })
 
       world.addBody(wallBody)
-      bodies.push(wallBody)
+      wallBodies.push(wallBody)
     }
 
+    wallBodiesRef.current = wallBodies
+
     return () => {
-      for (const body of bodies) {
+      for (const wallBody of wallBodiesRef.current) {
+        world.removeBody(wallBody)
+      }
+      wallBodiesRef.current = []
+
+      world.removeBody(playerBody)
+      playerBodyRef.current = null
+    }
+  }, [world])
+
+  useEffect(() => {
+    const nextObstacleBodies = obstacles.map((obstacle) => {
+      return new CANNON.Body({
+        mass: 0,
+        shape: new CANNON.Box(new CANNON.Vec3(obstacle.size.x / 2, obstacle.size.y / 2, obstacle.size.z / 2)),
+        position: new CANNON.Vec3(obstacle.position.x, obstacle.size.y / 2, obstacle.position.z),
+      })
+    })
+
+    for (const body of nextObstacleBodies) {
+      world.addBody(body)
+    }
+
+    obstacleBodiesRef.current = nextObstacleBodies
+
+    return () => {
+      for (const body of nextObstacleBodies) {
         world.removeBody(body)
       }
-      playerBodyRef.current = null
+
+      if (obstacleBodiesRef.current === nextObstacleBodies) {
+        obstacleBodiesRef.current = []
+      }
     }
   }, [obstacles, world])
 

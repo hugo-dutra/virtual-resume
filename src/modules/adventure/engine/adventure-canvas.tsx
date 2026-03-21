@@ -15,6 +15,19 @@ type AdventureCanvasProps = {
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
   onPlayerPositionChange: (position: PlayerPosition) => void
+  onEducationBoundsChange: (
+    placeId: string,
+    bounds: {
+      position: {
+        x: number
+        z: number
+      }
+      size: {
+        x: number
+        z: number
+      }
+    } | null,
+  ) => void
 }
 
 export function AdventureCanvas({
@@ -27,6 +40,7 @@ export function AdventureCanvas({
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
   onPlayerPositionChange,
+  onEducationBoundsChange,
 }: AdventureCanvasProps) {
   return (
     <div className="h-full w-full">
@@ -52,6 +66,7 @@ export function AdventureCanvas({
             onHoveredBuildingChange={onHoveredBuildingChange}
             onActiveBuildingCountChange={onActiveBuildingCountChange}
             onPlayerPositionChange={onPlayerPositionChange}
+            onEducationBoundsChange={onEducationBoundsChange}
           />
         </Suspense>
       </Canvas>

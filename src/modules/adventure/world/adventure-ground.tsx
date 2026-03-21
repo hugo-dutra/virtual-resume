@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
 import { useModelAsset } from '../hooks/use-model-asset'
 import { getAssetModelUrl, resolveAssetTransform } from '../utils/adventure-asset-resolver'
-import { MAP_SIZE } from './world.constants'
+import { GROUND_SIZE } from './world.constants'
 
 const TERRAIN_TEXTURE_PATH = '/assets/textures/terrain-pattern.svg'
 
@@ -16,7 +16,7 @@ export function AdventureGround({ asset }: AdventureGroundProps) {
   const modelUrl = getAssetModelUrl(asset)
   const { scene: modelScene } = useModelAsset(modelUrl)
   const { offset, rotation, scale } = resolveAssetTransform(asset)
-  const textureRepeat = MAP_SIZE / 7.33
+  const textureRepeat = GROUND_SIZE / 7.33
 
   return (
     <group>
@@ -25,7 +25,7 @@ export function AdventureGround({ asset }: AdventureGroundProps) {
       ) : (
         <>
           <mesh receiveShadow rotation-x={-Math.PI / 2}>
-            <planeGeometry args={[MAP_SIZE, MAP_SIZE]} />
+            <planeGeometry args={[GROUND_SIZE, GROUND_SIZE]} />
             <meshStandardMaterial
               color="#14532d"
               map={terrainTexture}
@@ -39,7 +39,7 @@ export function AdventureGround({ asset }: AdventureGroundProps) {
             />
           </mesh>
 
-          <gridHelper args={[MAP_SIZE, MAP_SIZE, '#64748b', '#1f2937']} position={[0, 0.01, 0]} />
+          <gridHelper args={[GROUND_SIZE, GROUND_SIZE, '#64748b', '#1f2937']} position={[0, 0.01, 0]} />
         </>
       )}
     </group>

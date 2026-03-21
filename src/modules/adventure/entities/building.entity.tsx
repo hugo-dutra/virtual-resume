@@ -1,11 +1,84 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTexture } from '@react-three/drei'
-import type { Mesh } from 'three'
+import type { Group, Mesh } from 'three'
 import * as THREE from 'three'
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
 import type { Building } from '../../../data/buildings.schema'
 import { useModelAsset } from '../hooks/use-model-asset'
 import { getAssetModelUrl, resolveAssetTransform } from '../utils/adventure-asset-resolver'
+
+type ObstacleBounds = {
+  position: {
+    x: number
+    z: number
+  }
+  size: {
+    x: number
+    y: number
+    z: number
+  }
+}
+
+type InteractiveBounds = {
+  center: [number, number, number]
+  size: [number, number, number]
+  obstacle: ObstacleBounds
+}
+
+const MIN_BOUND_SIZE = 0.1
+const BOUNDS_EPSILON = 0.01
+
+function getFallbackBounds(building: Building): InteractiveBounds {
+  return {
+    center: [0, building.size.y / 2, 0],
+    size: [building.size.x, building.size.y, building.size.z],
+    obstacle: {
+      position: {
+        x: building.position.x,
+        z: building.position.z,
+      },
+      size: {
+        x: building.size.x,
+        y: building.size.y,
+        z: building.size.z,
+      },
+    },
+  }
+}
+
+function areValuesClose(a: number, b: number) {
+  return Math.abs(a - b) <= BOUNDS_EPSILON
+}
+
+function areInteractiveBoundsEqual(a: InteractiveBounds, b: InteractiveBounds) {
+  return (
+    areValuesClose(a.center[0], b.center[0]) &&
+    areValuesClose(a.center[1], b.center[1]) &&
+    areValuesClose(a.center[2], b.center[2]) &&
+    areValuesClose(a.size[0], b.size[0]) &&
+    areValuesClose(a.size[1], b.size[1]) &&
+    areValuesClose(a.size[2], b.size[2]) &&
+    areValuesClose(a.obstacle.position.x, b.obstacle.position.x) &&
+    areValuesClose(a.obstacle.position.z, b.obstacle.position.z) &&
+    areValuesClose(a.obstacle.size.x, b.obstacle.size.x) &&
+    areValuesClose(a.obstacle.size.y, b.obstacle.size.y) &&
+    areValuesClose(a.obstacle.size.z, b.obstacle.size.z)
+  )
+}
+
+function areObstacleBoundsEqual(a: ObstacleBounds | null, b: ObstacleBounds | null) {
+  if (!a || !b) {
+    return a === b
+  }
+
+  return (
+    areValuesClose(a.position.x, b.position.x) &&
+    areValuesClose(a.position.z, b.position.z) &&
+    areValuesClose(a.size.x, b.size.x) &&
+    areValuesClose(a.size.y, b.size.y) &&
+    areValuesClose(a.size.z, b.size.z)
+  )
+}
 
 type BuildingEntityProps = {
   building: Building
@@ -13,6 +86,7 @@ type BuildingEntityProps = {
   isHovered: boolean
   isSelected: boolean
   registerInteractiveMesh: (buildingId: string, mesh: Mesh | null) => void
+  onObstacleBoundsChange?: (buildingId: string, bounds: ObstacleBounds | null) => void
 }
 
 export function BuildingEntity({
@@ -21,11 +95,19 @@ export function BuildingEntity({
   isHovered,
   isSelected,
   registerInteractiveMesh,
+  onObstacleBoundsChange,
 }: BuildingEntityProps) {
   const roofTexture = useTexture('/assets/textures/roof-pattern.svg')
   const modelUrl = getAssetModelUrl(asset)
   const { scene: modelScene } = useModelAsset(modelUrl)
-  const { offset, rotation, scale } = resolveAssetTransform(asset)
+  const { offset, rotation, scale } = useMemo(() => resolveAssetTransform(asset), [asset])
+  const modelWrapperRef = useRef<Group | null>(null)
+  const publishedObstacleBoundsRef = useRef<ObstacleBounds | null>(null)
+  const fallbackBounds = useMemo(() => getFallbackBounds(building), [building])
+  const [interactiveBounds, setInteractiveBounds] = useState<InteractiveBounds>(() => fallbackBounds)
+  const [offsetX, offsetY, offsetZ] = offset
+  const [rotationX, rotationY, rotationZ] = rotation
+  const [scaleX, scaleY, scaleZ] = scale
 
   const interactiveMeshRef = useCallback(
     (mesh: Mesh | null) => {
@@ -33,21 +115,115 @@ export function BuildingEntity({
     },
     [building.id, registerInteractiveMesh],
   )
+  const publishObstacleBounds = useCallback(
+    (bounds: ObstacleBounds | null) => {
+      if (!onObstacleBoundsChange) {
+        return
+      }
+
+      if (areObstacleBoundsEqual(publishedObstacleBoundsRef.current, bounds)) {
+        return
+      }
+
+      publishedObstacleBoundsRef.current = bounds
+      onObstacleBoundsChange(building.id, bounds)
+    },
+    [building.id, onObstacleBoundsChange],
+  )
 
   const isActive = isHovered || isSelected
 
+  useEffect(() => {
+    setInteractiveBounds(fallbackBounds)
+  }, [fallbackBounds])
+
+  useLayoutEffect(() => {
+    if (!modelScene || !modelWrapperRef.current) {
+      setInteractiveBounds((currentBounds) =>
+        areInteractiveBoundsEqual(currentBounds, fallbackBounds) ? currentBounds : fallbackBounds,
+      )
+      publishObstacleBounds(fallbackBounds.obstacle)
+      return
+    }
+
+    modelWrapperRef.current.updateWorldMatrix(true, true)
+
+    const bounds = new THREE.Box3().setFromObject(modelWrapperRef.current)
+    if (bounds.isEmpty()) {
+      setInteractiveBounds((currentBounds) =>
+        areInteractiveBoundsEqual(currentBounds, fallbackBounds) ? currentBounds : fallbackBounds,
+      )
+      publishObstacleBounds(fallbackBounds.obstacle)
+      return
+    }
+
+    const size = new THREE.Vector3()
+    const center = new THREE.Vector3()
+    bounds.getSize(size)
+    bounds.getCenter(center)
+
+    const nextBounds: InteractiveBounds = {
+      center: [center.x - building.position.x, center.y, center.z - building.position.z],
+      size: [Math.max(size.x, MIN_BOUND_SIZE), Math.max(size.y, MIN_BOUND_SIZE), Math.max(size.z, MIN_BOUND_SIZE)],
+      obstacle: {
+        position: {
+          x: center.x,
+          z: center.z,
+        },
+        size: {
+          x: Math.max(size.x, MIN_BOUND_SIZE),
+          y: Math.max(size.y, MIN_BOUND_SIZE),
+          z: Math.max(size.z, MIN_BOUND_SIZE),
+        },
+      },
+    }
+
+    setInteractiveBounds((currentBounds) =>
+      areInteractiveBoundsEqual(currentBounds, nextBounds) ? currentBounds : nextBounds,
+    )
+    publishObstacleBounds(nextBounds.obstacle)
+  }, [
+    building.position.x,
+    building.position.z,
+    fallbackBounds,
+    modelScene,
+    offsetX,
+    offsetY,
+    offsetZ,
+    publishObstacleBounds,
+    rotationX,
+    rotationY,
+    rotationZ,
+    scaleX,
+    scaleY,
+    scaleZ,
+  ])
+
+  useEffect(() => {
+    return () => {
+      publishObstacleBounds(null)
+    }
+  }, [publishObstacleBounds])
+
   return (
     <group position={[building.position.x, 0, building.position.z]}>
-      <mesh ref={interactiveMeshRef} position={[0, building.size.y / 2, 0]} userData={{ buildingId: building.id }}>
-        <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
+      <mesh ref={interactiveMeshRef} position={interactiveBounds.center} userData={{ buildingId: building.id }}>
+        <boxGeometry args={interactiveBounds.size} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
       {modelScene ? (
-        <primitive object={modelScene} position={offset} rotation={rotation} scale={scale} />
+        <group
+          ref={modelWrapperRef}
+          position={[offsetX, offsetY, offsetZ]}
+          rotation={[rotationX, rotationY, rotationZ]}
+          scale={[scaleX, scaleY, scaleZ]}
+        >
+          <primitive object={modelScene} />
+        </group>
       ) : (
-        <mesh castShadow receiveShadow position={[0, building.size.y / 2, 0]}>
-          <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
+        <mesh castShadow receiveShadow position={interactiveBounds.center}>
+          <boxGeometry args={interactiveBounds.size} />
           <meshStandardMaterial
             color={building.color}
             emissive={isActive ? '#e2e8f0' : '#020617'}
@@ -56,11 +232,6 @@ export function BuildingEntity({
           />
         </mesh>
       )}
-
-      <mesh position={[0, building.size.y / 2, 0]} scale={[1.05, 1.05, 1.05]} visible={isActive}>
-        <boxGeometry args={[building.size.x, building.size.y, building.size.z]} />
-        <meshBasicMaterial color={isHovered ? '#bae6fd' : '#67e8f9'} opacity={0.5} transparent wireframe />
-      </mesh>
 
       {!modelScene ? (
         <mesh receiveShadow position={[0, building.size.y + 0.12, 0]}>

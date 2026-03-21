@@ -125,7 +125,11 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
 
   const playState = useCallback(
     (state: PlayerAnimationState) => {
-      const nextAction = actions[`state-${state}`] ?? actions['state-idle'] ?? actions['state-run']
+      const idleAction = actions['state-idle']
+      const runAction = actions['state-run']
+      const nextAction = state === 'run' ? runAction ?? idleAction : idleAction
+      const resolvedState: PlayerAnimationState = nextAction === runAction ? 'run' : 'idle'
+
       if (!nextAction) {
         return
       }
@@ -134,7 +138,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
         if (!nextAction.isRunning()) {
           nextAction.play()
         }
-        activeStateRef.current = state
+        activeStateRef.current = resolvedState
         return
       }
 
@@ -148,7 +152,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
       }
 
       currentActionRef.current = nextAction
-      activeStateRef.current = state
+      activeStateRef.current = resolvedState
     },
     [actions],
   )

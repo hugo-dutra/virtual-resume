@@ -47,7 +47,20 @@
       "relationId": "autotrac",
       "title": "Autotrac Node Model",
       "description": "Represents the Autotrac experience in the interactive map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 30.0,
+          "y": 30.0,
+          "z": 30.0
+        },
+        "offset": {
+          "x": -10,
+          "y": 0,
+          "z": -10
+        },
+        "rotationY": -55
+      }
     },
     {
       "assetId": "education-etb",
@@ -76,7 +89,20 @@
       "relationId": "ucb",
       "title": "UCB Landmark Model",
       "description": "Represents UCB as part of the education journey in the map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 25.0,
+          "y": 25.0,
+          "z": 25.0
+        },
+        "offset": {
+          "x": 6,
+          "y": 0,
+          "z": 0
+        },
+        "rotationY": 0
+      }
     },
     {
       "assetId": "ground-main",

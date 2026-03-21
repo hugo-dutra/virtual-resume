@@ -21,6 +21,7 @@ import {
   CAMERA_FOLLOW_OFFSET,
   MAP_SIZE,
   PLAYER_BASE_SPEED,
+  PLAYER_RADIUS,
   REGION_SIZE,
 } from '../world/world.constants'
 
@@ -28,6 +29,36 @@ const PLAYER_TURN_SMOOTHNESS = 7
 const PLAYER_STEER_SMOOTHNESS = 11
 const PLAYER_REVERSE_DIRECTION_DOT_THRESHOLD = -0.2
 const PLAYER_REVERSE_STEER_SMOOTHNESS = 24
+const MIN_OBSTACLE_HEIGHT = PLAYER_RADIUS * 2 + 0.3
+const OBSTACLE_BOUNDS_EPSILON = 0.01
+const MAX_OBSTACLE_SIZE_MULTIPLIER = 4
+const MAX_OBSTACLE_SHIFT_MULTIPLIER = 2
+
+type ObstacleBounds = {
+  position: {
+    x: number
+    z: number
+  }
+  size: {
+    x: number
+    y: number
+    z: number
+  }
+}
+
+function areObstacleBoundsEqual(a: ObstacleBounds | undefined, b: ObstacleBounds) {
+  if (!a) {
+    return false
+  }
+
+  return (
+    Math.abs(a.position.x - b.position.x) <= OBSTACLE_BOUNDS_EPSILON &&
+    Math.abs(a.position.z - b.position.z) <= OBSTACLE_BOUNDS_EPSILON &&
+    Math.abs(a.size.x - b.size.x) <= OBSTACLE_BOUNDS_EPSILON &&
+    Math.abs(a.size.y - b.size.y) <= OBSTACLE_BOUNDS_EPSILON &&
+    Math.abs(a.size.z - b.size.z) <= OBSTACLE_BOUNDS_EPSILON
+  )
+}
 
 type InteractiveTarget =
   | {
@@ -54,6 +85,19 @@ type AdventureSceneProps = {
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
   onPlayerPositionChange: (position: PlayerPosition) => void
+  onEducationBoundsChange?: (
+    placeId: string,
+    bounds: {
+      position: {
+        x: number
+        z: number
+      }
+      size: {
+        x: number
+        z: number
+      }
+    } | null,
+  ) => void
 }
 
 function getRegionCoordinate(position: number) {
@@ -70,12 +114,59 @@ export function AdventureScene({
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
   onPlayerPositionChange,
+  onEducationBoundsChange,
 }: AdventureSceneProps) {
   const { camera, gl, pointer, raycaster } = useThree()
   const controlsRef = useKeyboardControls()
   const allBuildings = useMemo(() => buildingsData.buildings, [])
   const educationPlaces = useMemo(() => educationPlacesData.places, [])
-  const allObstacles = useMemo(() => [...allBuildings, ...educationPlaces], [allBuildings, educationPlaces])
+  const [dynamicObstacleBoundsById, setDynamicObstacleBoundsById] = useState<Record<string, ObstacleBounds>>({})
+  const staticObstacles = useMemo(() => [...allBuildings, ...educationPlaces], [allBuildings, educationPlaces])
+  const allObstacles = useMemo(() => {
+    return staticObstacles.map((obstacle) => {
+      const dynamicBounds = dynamicObstacleBoundsById[obstacle.id]
+      if (!dynamicBounds) {
+        return obstacle
+      }
+
+      const maxShiftX = obstacle.size.x * MAX_OBSTACLE_SHIFT_MULTIPLIER
+      const maxShiftZ = obstacle.size.z * MAX_OBSTACLE_SHIFT_MULTIPLIER
+      const shiftX = Math.abs(dynamicBounds.position.x - obstacle.position.x)
+      const shiftZ = Math.abs(dynamicBounds.position.z - obstacle.position.z)
+
+      if (shiftX > maxShiftX || shiftZ > maxShiftZ) {
+        return obstacle
+      }
+
+      const sizeX = THREE.MathUtils.clamp(
+        dynamicBounds.size.x,
+        0.1,
+        obstacle.size.x * MAX_OBSTACLE_SIZE_MULTIPLIER,
+      )
+      const sizeY = THREE.MathUtils.clamp(
+        dynamicBounds.size.y,
+        0.1,
+        obstacle.size.y * MAX_OBSTACLE_SIZE_MULTIPLIER,
+      )
+      const sizeZ = THREE.MathUtils.clamp(
+        dynamicBounds.size.z,
+        0.1,
+        obstacle.size.z * MAX_OBSTACLE_SIZE_MULTIPLIER,
+      )
+
+      return {
+        position: {
+          x: dynamicBounds.position.x,
+          z: dynamicBounds.position.z,
+        },
+        size: {
+          x: sizeX,
+          y: Math.max(sizeY, obstacle.size.y, MIN_OBSTACLE_HEIGHT),
+          z: sizeZ,
+        },
+      }
+    })
+  }, [dynamicObstacleBoundsById, staticObstacles])
   const allAssets = useMemo(() => adventureAssetsData.assets, [])
   const { world, playerBodyRef } = useAdventurePhysics(allObstacles)
 
@@ -169,6 +260,30 @@ export function AdventureScene({
     }
 
     delete interactiveMeshesRef.current[buildingId]
+  }, [])
+  const handleObstacleBoundsChange = useCallback((obstacleId: string, bounds: ObstacleBounds | null) => {
+    setDynamicObstacleBoundsById((currentBounds) => {
+      const currentValue = currentBounds[obstacleId]
+
+      if (!bounds) {
+        if (!currentValue) {
+          return currentBounds
+        }
+
+        const nextBounds = { ...currentBounds }
+        delete nextBounds[obstacleId]
+        return nextBounds
+      }
+
+      if (areObstacleBoundsEqual(currentValue, bounds)) {
+        return currentBounds
+      }
+
+      return {
+        ...currentBounds,
+        [obstacleId]: bounds,
+      }
+    })
   }, [])
 
   const syncHoveredBuilding = useCallback(
@@ -353,8 +468,12 @@ export function AdventureScene({
 
     world.step(1 / 60, delta, 4)
 
+    // Keep player glued to the ground plane to avoid vertical drift from obstacle resolution.
+    playerBody.position.y = PLAYER_RADIUS
+    playerBody.velocity.y = 0
+
     if (playerGroupRef.current) {
-      playerGroupRef.current.position.set(playerBody.position.x, playerBody.position.y, playerBody.position.z)
+      playerGroupRef.current.position.set(playerBody.position.x, playerBody.position.y + PLAYER_RADIUS, playerBody.position.z)
 
       if (hasDirection) {
         const targetYaw = Math.atan2(smoothedDirectionVectorRef.current.x, smoothedDirectionVectorRef.current.z)
@@ -408,7 +527,7 @@ export function AdventureScene({
       <color attach="background" args={['#020617']} />
       <fog attach="fog" args={['#020617', 18, 70]} />
 
-      <AdventureLighting />
+      <AdventureLighting followTargetRef={playerGroupRef} />
       <AdventureGround asset={groundAsset} />
       <PlayerEntity groupRef={playerGroupRef} asset={playerAsset} movementInputRef={movementInputRef} />
 
@@ -420,6 +539,7 @@ export function AdventureScene({
           isHovered={building.id === hoveredBuildingId}
           isSelected={building.id === selectedBuildingId}
           registerInteractiveMesh={registerInteractiveMesh}
+          onObstacleBoundsChange={handleObstacleBoundsChange}
         />
       ))}
 
@@ -430,6 +550,8 @@ export function AdventureScene({
           asset={educationAssetMap.get(place.educationId) ?? null}
           isSelected={place.id === selectedEducationPlaceId}
           registerInteractiveMesh={registerInteractiveMesh}
+          onBoundsChange={onEducationBoundsChange}
+          onObstacleBoundsChange={handleObstacleBoundsChange}
         />
       ))}
 
