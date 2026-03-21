@@ -5,7 +5,7 @@
       "id": "building-foton",
       "name": "Foton Tower",
       "experienceId": "foton-informatica",
-      "position": { "x": 15, "z": -28 },
+      "position": { "x": 15, "z": -74 },
       "size": { "x": 4.8, "y": 4.4, "z": 4.8 },
       "color": "#2563eb",
       "zone": "Timeline Summit"
@@ -14,7 +14,7 @@
       "id": "building-ilia",
       "name": "Ilia Hub",
       "experienceId": "ilia",
-      "position": { "x": -15, "z": -17 },
+      "position": { "x": -15, "z": -52 },
       "size": { "x": 3.6, "y": 3.1, "z": 3.6 },
       "color": "#0ea5e9",
       "zone": "Innovation Ridge"
@@ -23,7 +23,7 @@
       "id": "building-seedf",
       "name": "SEEDF Base",
       "experienceId": "seedf",
-      "position": { "x": 16, "z": -7 },
+      "position": { "x": 16, "z": -32 },
       "size": { "x": 5.2, "y": 3.8, "z": 5.2 },
       "color": "#14b8a6",
       "zone": "Public Service Corner"
@@ -32,7 +32,7 @@
       "id": "building-infinity",
       "name": "Infinity Campus",
       "experienceId": "infinity",
-      "position": { "x": -16, "z": 2 },
+      "position": { "x": -16, "z": -14 },
       "size": { "x": 3.8, "y": 3.2, "z": 3.8 },
       "color": "#f43f5e",
       "zone": "HealthTech Bend"
@@ -41,7 +41,7 @@
       "id": "building-physics-teacher-seedf",
       "name": "Teacher Pavilion",
       "experienceId": "physics-teacher-seedf",
-      "position": { "x": 17, "z": 10 },
+      "position": { "x": 17, "z": 2 },
       "size": { "x": 4.2, "y": 2.8, "z": 4.2 },
       "color": "#f59e0b",
       "zone": "Teaching Lane"

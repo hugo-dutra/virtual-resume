@@ -39,7 +39,20 @@
       "relationId": "physics-teacher-seedf",
       "title": "Teacher Pavilion Model",
       "description": "Represents the Physics Teacher period in the interactive map.",
-      "format": "glb"
+      "format": "glb",
+      "transform": {
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "offset": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotationY": -55
+      }
     },
     {
       "assetId": "building-autotrac",

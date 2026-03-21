@@ -143,7 +143,7 @@ export function PlayerEntity({ groupRef, asset, movementInputRef }: PlayerEntity
       }
 
       nextAction.setLoop(THREE.LoopRepeat, Infinity)
-      nextAction.setEffectiveTimeScale(0.75)
+      nextAction.setEffectiveTimeScale(0.85)
       nextAction.setEffectiveWeight(1)
       nextAction.reset().fadeIn(0.12).play()
 
