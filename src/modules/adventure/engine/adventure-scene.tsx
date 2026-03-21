@@ -38,6 +38,8 @@ const MIN_DYNAMIC_OBSTACLE_SIZE = 0.1
 const HALF_GROUND_SIZE = GROUND_SIZE / 2
 const DYNAMIC_OBSTACLE_EDGE_MARGIN = 0.5
 const MAX_DYNAMIC_OBSTACLE_SIZE = GROUND_SIZE - DYNAMIC_OBSTACLE_EDGE_MARGIN * 2
+const OBSTACLE_COLLISION_PADDING_XZ = 1.8
+const ACTIVE_REGION_RENDER_BUFFER = 1
 const MIN_CAMERA_ZOOM_FACTOR = 1
 const MAX_CAMERA_ZOOM_FACTOR = 3
 const INITIAL_CAMERA_ZOOM_FACTOR = MAX_CAMERA_ZOOM_FACTOR
@@ -176,6 +178,20 @@ function sanitizeDynamicObstacleBounds(
   }
 }
 
+function padObstacleBoundsForCollision(bounds: ObstacleBounds): ObstacleBounds {
+  return {
+    position: {
+      x: bounds.position.x,
+      z: bounds.position.z,
+    },
+    size: {
+      x: bounds.size.x + OBSTACLE_COLLISION_PADDING_XZ,
+      y: bounds.size.y,
+      z: bounds.size.z + OBSTACLE_COLLISION_PADDING_XZ,
+    },
+  }
+}
+
 export function AdventureScene({
   hoveredBuildingId,
   selectedBuildingId,
@@ -208,21 +224,22 @@ export function AdventureScene({
   const allObstacles = useMemo(() => {
     const dynamicAwareObstacles = staticObstacles.map((obstacle) => {
       const dynamicBounds = dynamicObstacleBoundsById[obstacle.id]
-      if (!dynamicBounds) {
-        return obstacle
-      }
-
-      return {
+      const sourceBounds = dynamicBounds ?? obstacle
+      const baseBounds = {
         position: {
-          x: dynamicBounds.position.x,
-          z: dynamicBounds.position.z,
+          x: sourceBounds.position.x,
+          z: sourceBounds.position.z,
         },
         size: {
-          x: dynamicBounds.size.x,
-          y: Math.max(dynamicBounds.size.y, obstacle.size.y, MIN_OBSTACLE_HEIGHT),
-          z: dynamicBounds.size.z,
+          x: sourceBounds.size.x,
+          y: dynamicBounds
+            ? Math.max(dynamicBounds.size.y, obstacle.size.y, MIN_OBSTACLE_HEIGHT)
+            : Math.max(obstacle.size.y, MIN_OBSTACLE_HEIGHT),
+          z: sourceBounds.size.z,
         },
       }
+
+      return padObstacleBoundsForCollision(baseBounds)
     })
 
     return [...dynamicAwareObstacles, ...perimeterWallObstacles]
@@ -289,25 +306,29 @@ export function AdventureScene({
   }, [allAssets])
 
   const activeBuildings = useMemo(() => {
+    const effectiveRegionRadius = ACTIVE_REGION_RADIUS + ACTIVE_REGION_RENDER_BUFFER
+
     return allBuildings.filter((building) => {
       const regionX = getRegionCoordinate(building.position.x)
       const regionZ = getRegionCoordinate(building.position.z)
 
       const isWithinRegionRange =
-        Math.abs(regionX - activeRegion.x) <= ACTIVE_REGION_RADIUS &&
-        Math.abs(regionZ - activeRegion.z) <= ACTIVE_REGION_RADIUS
+        Math.abs(regionX - activeRegion.x) <= effectiveRegionRadius &&
+        Math.abs(regionZ - activeRegion.z) <= effectiveRegionRadius
 
       return isWithinRegionRange || building.id === selectedBuildingId
     })
   }, [activeRegion.x, activeRegion.z, allBuildings, selectedBuildingId])
   const activeEducationPlaces = useMemo(() => {
+    const effectiveRegionRadius = ACTIVE_REGION_RADIUS + ACTIVE_REGION_RENDER_BUFFER
+
     return educationPlaces.filter((place) => {
       const regionX = getRegionCoordinate(place.position.x)
       const regionZ = getRegionCoordinate(place.position.z)
 
       const isWithinRegionRange =
-        Math.abs(regionX - activeRegion.x) <= ACTIVE_REGION_RADIUS &&
-        Math.abs(regionZ - activeRegion.z) <= ACTIVE_REGION_RADIUS
+        Math.abs(regionX - activeRegion.x) <= effectiveRegionRadius &&
+        Math.abs(regionZ - activeRegion.z) <= effectiveRegionRadius
 
       return isWithinRegionRange || place.id === selectedEducationPlaceId
     })
@@ -328,19 +349,20 @@ export function AdventureScene({
     (obstacleId: string, bounds: ObstacleBounds | null) => {
       const staticObstacle = obstacleById.get(obstacleId)
       const sanitizedBounds = staticObstacle ? sanitizeDynamicObstacleBounds(staticObstacle, bounds) : null
+      const paddedBounds = sanitizedBounds ? padObstacleBoundsForCollision(sanitizedBounds) : null
 
       if (onBuildingBoundsChange && buildingById.has(obstacleId)) {
         onBuildingBoundsChange(
           obstacleId,
-          sanitizedBounds
+          paddedBounds
             ? {
                 position: {
-                  x: sanitizedBounds.position.x,
-                  z: sanitizedBounds.position.z,
+                  x: paddedBounds.position.x,
+                  z: paddedBounds.position.z,
                 },
                 size: {
-                  x: sanitizedBounds.size.x,
-                  z: sanitizedBounds.size.z,
+                  x: paddedBounds.size.x,
+                  z: paddedBounds.size.z,
                 },
               }
             : null,

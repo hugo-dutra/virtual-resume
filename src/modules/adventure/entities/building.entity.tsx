@@ -100,7 +100,7 @@ export function BuildingEntity({
 }: BuildingEntityProps) {
   const roofTexture = useTexture(resolvePublicAssetPath('/assets/textures/roof-pattern.svg'))
   const modelUrl = getAssetModelUrl(asset)
-  const { scene: modelScene } = useModelAsset(modelUrl)
+  const { scene: modelScene, status: modelStatus } = useModelAsset(modelUrl)
   const { offset, rotation, scale, collisionScale, collisionOffset } = useMemo(
     () => resolveAssetTransform(asset),
     [asset],
@@ -138,6 +138,7 @@ export function BuildingEntity({
   )
 
   const isActive = isHovered || isSelected
+  const shouldRenderFallbackGeometry = !modelUrl || modelStatus === 'error'
 
   useEffect(() => {
     setInteractiveBounds(fallbackBounds)
@@ -240,7 +241,7 @@ export function BuildingEntity({
         >
           <primitive object={modelScene} />
         </group>
-      ) : (
+      ) : shouldRenderFallbackGeometry ? (
         <mesh castShadow receiveShadow position={interactiveBounds.center}>
           <boxGeometry args={interactiveBounds.size} />
           <meshStandardMaterial
@@ -250,9 +251,9 @@ export function BuildingEntity({
             roughness={0.35}
           />
         </mesh>
-      )}
+      ) : null}
 
-      {!modelScene ? (
+      {shouldRenderFallbackGeometry ? (
         <mesh receiveShadow position={[0, building.size.y + 0.12, 0]}>
           <boxGeometry args={[building.size.x * 0.88, 0.24, building.size.z * 0.88]} />
           <meshStandardMaterial

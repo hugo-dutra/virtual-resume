@@ -8,7 +8,7 @@
       "institution": "Escola Tecnica de Brasilia (ETB)",
       "period": "1999 - 2001",
       "details": "Technical high school foundation in technology and scientific disciplines.",
-      "position": { "x": -16, "z": 34 },
+      "position": { "x": -15.5, "z": 66 },
       "size": { "x": 3.4, "y": 2.8, "z": 3.4 },
       "color": "#f97316",
       "zone": "Foundations Gate"
@@ -20,7 +20,7 @@
       "institution": "Catholic University of Brasilia (UCB)",
       "period": "2002 - 2007",
       "details": "Full Teaching Degree in Physics, with a final project focused on 3D simulation.",
-      "position": { "x": 16, "z": 26 },
+      "position": { "x": 16.5, "z": 52 },
       "size": { "x": 4.2, "y": 3.2, "z": 4.2 },
       "color": "#a855f7",
       "zone": "Academic Bridge"

@@ -136,7 +136,7 @@ export function EducationLandmarkEntity({
   onObstacleBoundsChange,
 }: EducationLandmarkEntityProps) {
   const modelUrl = getAssetModelUrl(asset)
-  const { scene: modelScene } = useModelAsset(modelUrl)
+  const { scene: modelScene, status: modelStatus } = useModelAsset(modelUrl)
   const { offset, rotation, scale, collisionScale, collisionOffset } = useMemo(
     () => resolveAssetTransform(asset),
     [asset],
@@ -151,6 +151,7 @@ export function EducationLandmarkEntity({
   const [scaleX, scaleY, scaleZ] = scale
   const [collisionScaleX, collisionScaleY, collisionScaleZ] = collisionScale
   const [collisionOffsetX, collisionOffsetY, collisionOffsetZ] = collisionOffset
+  const shouldRenderFallbackGeometry = !modelUrl || modelStatus === 'error'
   const interactiveMeshRef = useCallback(
     (mesh: Mesh | null) => {
       registerInteractiveMesh(place.id, mesh)
@@ -304,7 +305,7 @@ export function EducationLandmarkEntity({
         >
           <primitive object={modelScene} />
         </group>
-      ) : (
+      ) : shouldRenderFallbackGeometry ? (
         <mesh castShadow receiveShadow position={interactiveBounds.center}>
           <boxGeometry args={interactiveBounds.size} />
           <meshStandardMaterial
@@ -314,7 +315,7 @@ export function EducationLandmarkEntity({
             roughness={0.35}
           />
         </mesh>
-      )}
+      ) : null}
 
     </group>
   )

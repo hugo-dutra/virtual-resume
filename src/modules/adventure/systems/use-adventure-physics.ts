@@ -6,7 +6,8 @@ const HALF_MAP_SIZE = MAP_SIZE / 2
 const HALF_GROUND_SIZE = GROUND_SIZE / 2
 const WALL_HEIGHT = 2
 const WALL_THICKNESS = 0.6
-const PLAYER_START_Z = HALF_MAP_SIZE + 10
+const PLAYER_START_X = 0.5
+const PLAYER_START_Z = HALF_MAP_SIZE + 20
 
 type UseAdventurePhysicsResult = {
   world: CANNON.World
@@ -56,7 +57,7 @@ export function useAdventurePhysics(obstacles: ObstacleSpec[]): UseAdventurePhys
     const playerBody = new CANNON.Body({
       mass: 1,
       shape: new CANNON.Sphere(PLAYER_RADIUS),
-      position: new CANNON.Vec3(0, PLAYER_RADIUS, PLAYER_START_Z),
+      position: new CANNON.Vec3(PLAYER_START_X, PLAYER_RADIUS, PLAYER_START_Z),
       linearDamping: 0.72,
       angularDamping: 1,
       fixedRotation: true,

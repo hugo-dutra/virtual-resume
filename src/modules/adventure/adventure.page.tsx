@@ -23,6 +23,7 @@ const PROXIMITY_AUTO_OPEN_DISTANCE = 4
 const PROXIMITY_AUTO_CLOSE_DISTANCE = 6
 const PROXIMITY_REOPEN_DELTA = 0.03
 const PROXIMITY_EDGE_BUFFER = 1.2
+const PROXIMITY_SIZE_PADDING = 2.2
 const MARKER_BOUNDS_EPSILON = 0.01
 
 type DismissedTarget =
@@ -102,8 +103,8 @@ function getPlayerToBoxDistance(
     }
   },
 ) {
-  const halfWidth = box.size.x / 2
-  const halfDepth = box.size.z / 2
+  const halfWidth = box.size.x / 2 + PROXIMITY_SIZE_PADDING / 2
+  const halfDepth = box.size.z / 2 + PROXIMITY_SIZE_PADDING / 2
   const deltaX = Math.max(Math.abs(position.x - box.position.x) - halfWidth, 0)
   const deltaZ = Math.max(Math.abs(position.z - box.position.z) - halfDepth, 0)
   const centerToBuildingDistance = Math.hypot(deltaX, deltaZ)

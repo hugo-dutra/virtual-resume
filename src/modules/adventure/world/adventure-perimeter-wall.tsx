@@ -26,26 +26,26 @@ type WallObstacle = {
 }
 
 const HALF_GROUND_SIZE = GROUND_SIZE / 2
-const WALL_HEIGHT = 8
-const WALL_THICKNESS = 5
-const WALL_INSET = 2.5
-const WALL_LENGTH = GROUND_SIZE - WALL_THICKNESS * 2
+const WALL_HEIGHT = 10
+const WALL_THICKNESS = 22
+const WALL_OUTER_OFFSET = 10
+const WALL_LENGTH = GROUND_SIZE + WALL_THICKNESS * 2
 
 const PERIMETER_WALL_SEGMENTS: WallSegment[] = [
   {
-    position: { x: 0, y: WALL_HEIGHT / 2, z: -HALF_GROUND_SIZE + WALL_INSET },
+    position: { x: 0, y: WALL_HEIGHT / 2, z: -HALF_GROUND_SIZE - WALL_OUTER_OFFSET },
     size: { x: WALL_LENGTH, y: WALL_HEIGHT, z: WALL_THICKNESS },
   },
   {
-    position: { x: 0, y: WALL_HEIGHT / 2, z: HALF_GROUND_SIZE - WALL_INSET },
+    position: { x: 0, y: WALL_HEIGHT / 2, z: HALF_GROUND_SIZE + WALL_OUTER_OFFSET },
     size: { x: WALL_LENGTH, y: WALL_HEIGHT, z: WALL_THICKNESS },
   },
   {
-    position: { x: -HALF_GROUND_SIZE + WALL_INSET, y: WALL_HEIGHT / 2, z: 0 },
+    position: { x: -HALF_GROUND_SIZE - WALL_OUTER_OFFSET, y: WALL_HEIGHT / 2, z: 0 },
     size: { x: WALL_THICKNESS, y: WALL_HEIGHT, z: WALL_LENGTH },
   },
   {
-    position: { x: HALF_GROUND_SIZE - WALL_INSET, y: WALL_HEIGHT / 2, z: 0 },
+    position: { x: HALF_GROUND_SIZE + WALL_OUTER_OFFSET, y: WALL_HEIGHT / 2, z: 0 },
     size: { x: WALL_THICKNESS, y: WALL_HEIGHT, z: WALL_LENGTH },
   },
 ]
