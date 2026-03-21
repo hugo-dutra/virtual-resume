@@ -29,6 +29,20 @@ Fluxo atual:
    - `Build and deployment`: selecione `GitHub Actions`.
 3. Confirme que a branch de deploy e `master` (ou `main`, se trocar depois).
 
+### 3.1 Mudar visibilidade via CLI (Public/Private)
+
+Para alterar a visibilidade pelo terminal com `gh`, use:
+
+```bash
+gh repo edit hugo-dutra/virtual-resume --visibility private --accept-visibility-change-consequences
+```
+
+Para validar:
+
+```bash
+gh repo view hugo-dutra/virtual-resume --json visibility
+```
+
 ## 4) Publicacao (rotina normal)
 
 No terminal, na raiz do projeto:
