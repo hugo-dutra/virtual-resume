@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react'
 import { Howl } from 'howler'
 import { resolvePublicAssetPath } from '../../../shared/utils/resolve-public-asset-path'
 
-const AMBIENT_AUDIO_SRC = resolvePublicAssetPath('/assets/audio/adventure-ambient.wav')
+const AMBIENT_AUDIO_SRC = resolvePublicAssetPath('/assets/audio/Glass Credentials.mp3')
+const TARGET_VOLUME = 0.5
 
 export function useAdventureAudio(audioEnabled: boolean) {
   const soundRef = useRef<Howl | null>(null)
@@ -46,7 +47,7 @@ export function useAdventureAudio(audioEnabled: boolean) {
         sound.play()
       }
 
-      sound.fade(sound.volume(), 0.35, 700)
+      sound.fade(sound.volume(), TARGET_VOLUME, 700)
       return
     }
 
@@ -80,7 +81,7 @@ export function useAdventureAudio(audioEnabled: boolean) {
           sound.play()
         }
 
-        sound.fade(sound.volume(), 0.35, 400)
+        sound.fade(sound.volume(), TARGET_VOLUME, 400)
       }
     }
 

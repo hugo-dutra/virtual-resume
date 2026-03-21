@@ -35,10 +35,20 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: 'curriculo-virtual-store',
+      version: 2,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persistedState) => {
+        if (persistedState && typeof persistedState === 'object') {
+          return {
+            ...persistedState,
+            audioEnabled: false,
+          }
+        }
+
+        return persistedState
+      },
       partialize: (state) => ({
         theme: state.theme,
-        audioEnabled: state.audioEnabled,
       }),
     },
   ),

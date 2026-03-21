@@ -6,6 +6,7 @@ import { SectionTitle } from '../../shared/components/section-title'
 import { useAppMode } from '../../shared/hooks/use-app-mode'
 import { useAppStore } from '../../shared/stores/use-app-store'
 import { resolvePublicAssetPath } from '../../shared/utils/resolve-public-asset-path'
+import { useAdventureAudio } from '../adventure/hooks/use-adventure-audio'
 import { AdventurePreview } from './components/adventure-preview'
 import { ModeCard } from './components/mode-card'
 
@@ -46,6 +47,7 @@ export function LandingPage() {
   const [hasPhoto, setHasPhoto] = useState(true)
   const audioEnabled = useAppStore((state) => state.audioEnabled)
   const toggleAudio = useAppStore((state) => state.toggleAudio)
+  useAdventureAudio(audioEnabled)
 
   useEffect(() => {
     if (!heroRef.current) {
