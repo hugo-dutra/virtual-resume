@@ -80,6 +80,46 @@
         "minimapTextColor": "#0f172a",
         "hitbox": { "x": 1.5, "y": 2.1, "z": 1.5 }
       }
+    },
+    {
+      "id": "hailton-martins",
+      "name": "Hailton Martins",
+      "linkedinUrl": "https://www.linkedin.com/in/hailton-martins-junior-65bb701a4/",
+      "content": "I worked with Hailton in many opportunities. We were teachers at the same school (he taught Chemistry and I taught Physics). There we discovered that, besides science, we both enjoyed playing StarCraft 2. After that, we worked together at Ilia/Livelo. He is an excellent professional with an impressive learning capacity. From him, I learned the importance of pursuing fluency in English.",
+      "testimonial": "Hailton is an extremely fun and charismatic person. With him, I learned what resilience and willpower really mean. We also had the opportunity to build a business together and learned valuable lessons from that journey. More than a colleague or a friend, he is a brother.",
+      "zone": "Colleagues Quarter",
+      "picturePath": "/assets/colleagues/pictures/hailton-martins.png",
+      "movementSpeed": 3.5,
+      "path": [
+        { "x": -88.0, "z": -116.0 },
+        { "x": 0.0, "z": -120.0 },
+        { "x": 88.0, "z": -116.0 },
+        { "x": 98.0, "z": -52.0 },
+        { "x": 98.0, "z": 52.0 },
+        { "x": 88.0, "z": 112.0 },
+        { "x": 0.0, "z": 118.0 },
+        { "x": -88.0, "z": 112.0 },
+        { "x": -98.0, "z": 52.0 },
+        { "x": -98.0, "z": -52.0 }
+      ],
+      "asset": {
+        "animations": {
+          "idle": "colleagues/hailton-martins-idle.fbx",
+          "walking": "colleagues/hailton-martins-walking.fbx"
+        },
+        "transform": {
+          "scale": { "x": 5, "y": 5, "z": 5 },
+          "offset": { "x": 0, "y": -0.25, "z": 0 },
+          "rotationY": 0
+        }
+      },
+      "interaction": {
+        "stopDistance": 4.4,
+        "minimapIcon": "?",
+        "minimapBackgroundColor": "#22c55e",
+        "minimapTextColor": "#0f172a",
+        "hitbox": { "x": 1.5, "y": 2.1, "z": 1.5 }
+      }
     }
   ]
 }
