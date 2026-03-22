@@ -144,6 +144,8 @@ export function AdventureHud({
     return {
       id: colleague.id,
       icon: colleague.interaction?.minimapIcon ?? '?',
+      backgroundColor: colleague.interaction?.minimapBackgroundColor ?? '#facc15',
+      textColor: colleague.interaction?.minimapTextColor ?? '#0f172a',
       x: (clampedX / MINIMAP_VIEW_RADIUS) * MINIMAP_PIXEL_RADIUS,
       y: (clampedZ / MINIMAP_VIEW_RADIUS) * MINIMAP_PIXEL_RADIUS,
       isClamped: clampRatio < 1,
@@ -201,7 +203,7 @@ export function AdventureHud({
           )
         })}
 
-        {colleagueMarkerPositions.map(({ id, icon, x, y, isClamped }) => {
+        {colleagueMarkerPositions.map(({ id, icon, backgroundColor, textColor, x, y, isClamped }) => {
           const isSelected = id === selectedColleagueId
 
           return (
@@ -215,8 +217,8 @@ export function AdventureHud({
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
                 transform: 'translate(-50%, -50%)',
-                backgroundColor: '#facc15',
-                color: '#0f172a',
+                backgroundColor,
+                color: textColor,
                 opacity: isClamped ? 0.82 : 1,
                 boxShadow: isSelected ? '0 0 0 3px rgba(254, 249, 195, 0.4)' : 'none',
               }}

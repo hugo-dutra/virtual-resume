@@ -36,6 +36,48 @@
       "interaction": {
         "stopDistance": 4.4,
         "minimapIcon": "?",
+        "minimapBackgroundColor": "#ef4444",
+        "minimapTextColor": "#0f172a",
+        "hitbox": { "x": 1.5, "y": 2.1, "z": 1.5 }
+      }
+    },
+    {
+      "id": "rodrigo-freitas",
+      "name": "Rodrigo Freitas",
+      "linkedinUrl": "https://www.linkedin.com/in/rodrigo-m-freitas/",
+      "content": "Rodrigo was an exceptional leader and manager in both opportunities when we worked together at SEDF and SEDES, where he served as Undersecretary. He is a wonderful person who supported me in a very important and decisive moment and opened major opportunities for my growth.",
+      "testimonial": "Rodrigo, I learned a lot from you about partnership and trust. Thank you for your support, confidence, and the opportunities you gave me. From a great colleague to a great friend.",
+      "zone": "Colleagues Quarter",
+      "picturePath": "/assets/colleagues/pictures/rodrigo-freitas.jpg",
+      "movementSpeed": 3.5,
+      "path": [
+        { "x": -60.0, "z": -22.0 },
+        { "x": -60.0, "z": 38.0 },
+        { "x": -52.0, "z": 78.0 },
+        { "x": 0.0, "z": 84.0 },
+        { "x": 52.0, "z": 78.0 },
+        { "x": 60.0, "z": 38.0 },
+        { "x": 60.0, "z": -22.0 },
+        { "x": 52.0, "z": -90.0 },
+        { "x": 0.0, "z": -95.0 },
+        { "x": -52.0, "z": -90.0 }
+      ],
+      "asset": {
+        "animations": {
+          "idle": "colleagues/rodrigo-freitas-idle.fbx",
+          "walking": "colleagues/rodrigo-freitas-walking.fbx"
+        },
+        "transform": {
+          "scale": { "x": 5, "y": 5, "z": 5 },
+          "offset": { "x": 0, "y": -0.25, "z": 0 },
+          "rotationY": 0
+        }
+      },
+      "interaction": {
+        "stopDistance": 4.4,
+        "minimapIcon": "?",
+        "minimapBackgroundColor": "#3b82f6",
+        "minimapTextColor": "#0f172a",
         "hitbox": { "x": 1.5, "y": 2.1, "z": 1.5 }
       }
     }

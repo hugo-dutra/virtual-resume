@@ -35,6 +35,8 @@ const colleagueInteractionSchema = z.object({
   stopDistance: z.number().positive().optional(),
   hitbox: sizeSchema.optional(),
   minimapIcon: z.string().min(1).max(1).optional(),
+  minimapBackgroundColor: z.string().min(1).optional(),
+  minimapTextColor: z.string().min(1).optional(),
 })
 
 export const colleagueSchema = z.object({
