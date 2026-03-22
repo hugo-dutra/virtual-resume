@@ -4,18 +4,23 @@
     {
       "id": "marcelo-tobias",
       "name": "Marcelo Tobias",
-      "linkedinUrl": "https://www.linkedin.com/in/marcelotobias",
-      "content": "Marcelo foi uma referencia tecnica e humana durante momentos-chave da minha evolucao profissional. Trabalhar ao lado dele elevou meu nivel de colaboracao, ownership e visao de produto.",
-      "testimonial": "Marcelo, sua parceria foi essencial para eu evoluir como engenheiro e como pessoa. Obrigado por sempre puxar o time para cima com clareza, generosidade e excelencia.",
+      "linkedinUrl": "https://www.linkedin.com/in/brdevmtobias/",
+      "content": "Marcelo has been both a technical and human reference during key moments of my professional growth. We worked together at Autotrac, at Ilia/Livelo, and now at Sicoob, and even earlier at Naintec in the late 1990s and early 2000s, when I was still an intern. Working alongside him raised my level of collaboration, ownership, and product vision.",
+      "testimonial": "Marcelo, your partnership has been essential to my growth as an engineer and as a person. Working with you taught me a lot. Thank you for always lifting the team with clarity, generosity, and excellence.",
       "zone": "Colleagues Quarter",
       "picturePath": "/assets/colleagues/pictures/marcelo-tobias.jpg",
-      "movementSpeed": 3.9,
+      "movementSpeed": 3.5,
       "path": [
-        { "x": 44.5, "z": 22.5 },
-        { "x": 50.0, "z": 22.5 },
-        { "x": 50.0, "z": 31.0 },
-        { "x": 45.0, "z": 34.5 },
-        { "x": 41.5, "z": 27.0 }
+        { "x": -62.0, "z": -102.0 },
+        { "x": 0.0, "z": -108.0 },
+        { "x": 62.0, "z": -102.0 },
+        { "x": 72.0, "z": -24.0 },
+        { "x": 72.0, "z": 44.0 },
+        { "x": 62.0, "z": 92.0 },
+        { "x": 0.0, "z": 98.0 },
+        { "x": -62.0, "z": 92.0 },
+        { "x": -72.0, "z": 44.0 },
+        { "x": -72.0, "z": -24.0 }
       ],
       "asset": {
         "animations": {

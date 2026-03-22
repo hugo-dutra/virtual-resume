@@ -30,12 +30,12 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 backdrop-blur-sm"
       role="dialog"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white/50 p-6 shadow-2xl backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/50"
+        className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white/25 p-6 shadow-2xl backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/25"
         onClick={(event) => event.stopPropagation()}
       >
         <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
