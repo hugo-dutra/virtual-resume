@@ -1,4 +1,5 @@
 import type { Building } from '../../../data/buildings.schema'
+import type { Colleague } from '../../../data/colleagues.schema'
 import type { EducationPlace } from '../../../data/education-places.schema'
 import type { PlayerPosition } from '../engine/adventure-scene'
 import { MAP_SIZE } from '../world/world.constants'
@@ -31,12 +32,16 @@ type AdventureHudProps = {
   hoveredBuildingId: string | null
   selectedBuildingId: string | null
   selectedEducationPlaceId: string | null
+  selectedColleagueId: string | null
   playerPosition: PlayerPosition
   buildings: Building[]
   educationPlaces: EducationPlace[]
+  colleagues: Colleague[]
+  colleaguePositionsById?: Record<string, PlayerPosition>
   buildingMarkerBoundsById?: Record<string, ProximityBounds>
   educationMarkerBoundsById?: Record<string, ProximityBounds>
   onEducationMarkerSelect: (placeId: string) => void
+  onColleagueMarkerSelect: (colleagueId: string) => void
 }
 
 function getClosestPointToPlayerOnBounds(
@@ -68,12 +73,16 @@ export function AdventureHud({
   hoveredBuildingId,
   selectedBuildingId,
   selectedEducationPlaceId,
+  selectedColleagueId,
   playerPosition,
   buildings,
   educationPlaces,
+  colleagues,
+  colleaguePositionsById,
   buildingMarkerBoundsById,
   educationMarkerBoundsById,
   onEducationMarkerSelect,
+  onColleagueMarkerSelect,
 }: AdventureHudProps) {
   const experienceMarkerPositions: MarkerPosition[] = buildings.map((building) => {
     const markerPoint = getClosestPointToPlayerOnBounds(
@@ -114,6 +123,27 @@ export function AdventureHud({
     return {
       id: place.id,
       color: place.color,
+      x: (clampedX / MINIMAP_VIEW_RADIUS) * MINIMAP_PIXEL_RADIUS,
+      y: (clampedZ / MINIMAP_VIEW_RADIUS) * MINIMAP_PIXEL_RADIUS,
+      isClamped: clampRatio < 1,
+    }
+  })
+  const colleagueMarkerPositions = colleagues.map((colleague) => {
+    const trackedPosition = colleaguePositionsById?.[colleague.id] ?? {
+      x: colleague.path[0].x,
+      z: colleague.path[0].z,
+    }
+    const offsetX = trackedPosition.x - playerPosition.x
+    const offsetZ = trackedPosition.z - playerPosition.z
+    const distance = Math.hypot(offsetX, offsetZ)
+
+    const clampRatio = distance > MINIMAP_VIEW_RADIUS ? MINIMAP_VIEW_RADIUS / distance : 1
+    const clampedX = offsetX * clampRatio
+    const clampedZ = offsetZ * clampRatio
+
+    return {
+      id: colleague.id,
+      icon: colleague.interaction?.minimapIcon ?? '?',
       x: (clampedX / MINIMAP_VIEW_RADIUS) * MINIMAP_PIXEL_RADIUS,
       y: (clampedZ / MINIMAP_VIEW_RADIUS) * MINIMAP_PIXEL_RADIUS,
       isClamped: clampRatio < 1,
@@ -168,6 +198,33 @@ export function AdventureHud({
               title="Open education details"
               onClick={() => onEducationMarkerSelect(id)}
             />
+          )
+        })}
+
+        {colleagueMarkerPositions.map(({ id, icon, x, y, isClamped }) => {
+          const isSelected = id === selectedColleagueId
+
+          return (
+            <button
+              key={id}
+              type="button"
+              className={`pointer-events-auto absolute rounded-full border border-amber-100/80 text-[10px] font-semibold leading-none ${
+                isSelected ? 'h-4 w-4' : 'h-3 w-3'
+              }`}
+              style={{
+                left: `calc(50% + ${x}px)`,
+                top: `calc(50% + ${y}px)`,
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: '#facc15',
+                color: '#0f172a',
+                opacity: isClamped ? 0.82 : 1,
+                boxShadow: isSelected ? '0 0 0 3px rgba(254, 249, 195, 0.4)' : 'none',
+              }}
+              title="Open colleague testimonial"
+              onClick={() => onColleagueMarkerSelect(id)}
+            >
+              {icon}
+            </button>
           )
         })}
 

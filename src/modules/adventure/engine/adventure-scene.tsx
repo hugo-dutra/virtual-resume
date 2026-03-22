@@ -6,9 +6,12 @@ import { adventureAssetsData } from '../../../data/adventure-assets'
 import type { AdventureAsset } from '../../../data/adventure-assets.schema'
 import { buildingsData } from '../../../data/buildings'
 import type { Building } from '../../../data/buildings.schema'
+import { colleaguesData } from '../../../data/colleagues'
+import type { Colleague } from '../../../data/colleagues.schema'
 import { educationPlacesData } from '../../../data/education-places'
 import type { EducationPlace } from '../../../data/education-places.schema'
 import { BuildingEntity } from '../entities/building.entity'
+import { ColleagueNpcEntity } from '../entities/colleague-npc.entity'
 import { EducationLandmarkEntity } from '../entities/education-landmark.entity'
 import { PlayerEntity } from '../entities/player.entity'
 import { useKeyboardControls } from '../hooks/use-keyboard-controls'
@@ -92,6 +95,10 @@ type InteractiveTarget =
       kind: 'education'
       id: string
     }
+  | {
+      kind: 'colleague'
+      id: string
+    }
 
 export type PlayerPosition = {
   x: number
@@ -102,12 +109,15 @@ type AdventureSceneProps = {
   hoveredBuildingId: string | null
   selectedBuildingId: string | null
   selectedEducationPlaceId: string | null
+  selectedColleagueId: string | null
   onBuildingSelect: (building: Building) => void
   onEducationSelect: (place: EducationPlace) => void
+  onColleagueSelect: (colleague: Colleague) => void
   onEmptySelect: () => void
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
   onPlayerPositionChange: (position: PlayerPosition) => void
+  onColleaguePositionChange?: (colleagueId: string, position: PlayerPosition) => void
   onBuildingBoundsChange?: (
     buildingId: string,
     bounds: {
@@ -196,12 +206,15 @@ export function AdventureScene({
   hoveredBuildingId,
   selectedBuildingId,
   selectedEducationPlaceId,
+  selectedColleagueId,
   onBuildingSelect,
   onEducationSelect,
+  onColleagueSelect,
   onEmptySelect,
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
   onPlayerPositionChange,
+  onColleaguePositionChange,
   onBuildingBoundsChange,
   onEducationBoundsChange,
   touchControlsRef,
@@ -210,6 +223,7 @@ export function AdventureScene({
   const controlsRef = useKeyboardControls()
   const allBuildings = useMemo(() => buildingsData.buildings, [])
   const educationPlaces = useMemo(() => educationPlacesData.places, [])
+  const allColleagues = useMemo(() => colleaguesData.colleagues, [])
   const [dynamicObstacleBoundsById, setDynamicObstacleBoundsById] = useState<Record<string, ObstacleBounds>>({})
   const [isPlayerAnimationReady, setIsPlayerAnimationReady] = useState(false)
   const staticObstacles = useMemo<StaticObstacle[]>(
@@ -274,6 +288,7 @@ export function AdventureScene({
   const cameraTargetPosition = useMemo(() => new THREE.Vector3(), [])
   const buildingById = useMemo(() => new Map(allBuildings.map((building) => [building.id, building])), [allBuildings])
   const educationPlaceById = useMemo(() => new Map(educationPlaces.map((place) => [place.id, place])), [educationPlaces])
+  const colleagueById = useMemo(() => new Map(allColleagues.map((colleague) => [colleague.id, colleague])), [allColleagues])
   const playerAsset = useMemo(
     () => allAssets.find((asset) => asset.category === 'player') ?? null,
     [allAssets],
@@ -433,6 +448,14 @@ export function AdventureScene({
             id: educationPlaceId,
           } as InteractiveTarget
         }
+
+        const colleagueId = intersection.object.userData?.colleagueId
+        if (typeof colleagueId === 'string') {
+          return {
+            kind: 'colleague',
+            id: colleagueId,
+          } as InteractiveTarget
+        }
       }
 
       return null
@@ -501,6 +524,14 @@ export function AdventureScene({
         if (place) {
           onEducationSelect(place)
         }
+        return
+      }
+
+      if (targetEntity.kind === 'colleague') {
+        const colleague = colleagueById.get(targetEntity.id)
+        if (colleague) {
+          onColleagueSelect(colleague)
+        }
       }
     }
 
@@ -533,10 +564,12 @@ export function AdventureScene({
   }, [
     buildingById,
     clickPointer,
+    colleagueById,
     educationPlaceById,
     getIntersectedTarget,
     gl,
     onBuildingSelect,
+    onColleagueSelect,
     onEducationSelect,
     onEmptySelect,
     syncHoveredBuilding,
@@ -682,6 +715,17 @@ export function AdventureScene({
           registerInteractiveMesh={registerInteractiveMesh}
           onBoundsChange={onEducationBoundsChange}
           onObstacleBoundsChange={handleObstacleBoundsChange}
+        />
+      ))}
+
+      {allColleagues.map((colleague) => (
+        <ColleagueNpcEntity
+          key={colleague.id}
+          colleague={colleague}
+          playerGroupRef={playerGroupRef}
+          isSelected={colleague.id === selectedColleagueId}
+          registerInteractiveMesh={registerInteractiveMesh}
+          onPositionChange={onColleaguePositionChange}
         />
       ))}
 

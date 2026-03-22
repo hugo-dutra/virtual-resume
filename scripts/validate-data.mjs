@@ -145,6 +145,58 @@ const educationPlacesDocumentSchema = z.object({
     .min(1),
 })
 
+const colleaguesDocumentSchema = z.object({
+  updatedAt: z.string().min(1),
+  colleagues: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        linkedinUrl: z.string().url(),
+        content: z.string().min(1),
+        testimonial: z.string().min(1),
+        zone: z.string().min(1),
+        picturePath: z.string().min(1).optional(),
+        movementSpeed: z.number().positive().optional(),
+        path: z
+          .array(
+            z.object({
+              x: z.number(),
+              z: z.number(),
+            }),
+          )
+          .min(2),
+        asset: z.object({
+          animations: z.object({
+            idle: z.string().regex(/\.(fbx|glb|gltf)$/i),
+            walking: z.string().regex(/\.(fbx|glb|gltf)$/i),
+          }),
+          transform: z
+            .object({
+              scale: z.object({ x: z.number().positive(), y: z.number().positive(), z: z.number().positive() }).optional(),
+              offset: z.object({ x: z.number(), y: z.number(), z: z.number() }).optional(),
+              rotationY: z.number().optional(),
+            })
+            .optional(),
+        }),
+        interaction: z
+          .object({
+            stopDistance: z.number().positive().optional(),
+            hitbox: z
+              .object({
+                x: z.number().positive(),
+                y: z.number().positive(),
+                z: z.number().positive(),
+              })
+              .optional(),
+            minimapIcon: z.string().min(1).max(1).optional(),
+          })
+          .optional(),
+      }),
+    )
+    .min(1),
+})
+
 function validateJson(path, schema, label) {
   const raw = readFileSync(new URL(path, import.meta.url), 'utf8')
   const parsed = JSON.parse(raw)
@@ -172,9 +224,11 @@ const educationPlaces = validateJson(
   educationPlacesDocumentSchema,
   'education-places.json',
 )
+const colleagues = validateJson('../src/data/colleagues.json', colleaguesDocumentSchema, 'colleagues.json')
 
 console.log(`experiences.json is valid (${experiences.experiences.length} entries).`)
 console.log(`profile.json is valid (${profile.projects.length} projects).`)
 console.log(`buildings.json is valid (${buildings.buildings.length} buildings).`)
 console.log(`adventure-assets.json is valid (${adventureAssets.assets.length} assets).`)
 console.log(`education-places.json is valid (${educationPlaces.places.length} places).`)
+console.log(`colleagues.json is valid (${colleagues.colleagues.length} entries).`)

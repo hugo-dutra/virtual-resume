@@ -2,6 +2,7 @@ import { Suspense, type MutableRefObject } from 'react'
 import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import type { Building } from '../../../data/buildings.schema'
+import type { Colleague } from '../../../data/colleagues.schema'
 import type { EducationPlace } from '../../../data/education-places.schema'
 import type { TouchMoveVector } from '../ui/adventure-touch-joystick'
 import { AdventureScene, type PlayerPosition } from './adventure-scene'
@@ -10,12 +11,15 @@ type AdventureCanvasProps = {
   hoveredBuildingId: string | null
   selectedBuildingId: string | null
   selectedEducationPlaceId: string | null
+  selectedColleagueId: string | null
   onBuildingSelect: (building: Building) => void
   onEducationSelect: (place: EducationPlace) => void
+  onColleagueSelect: (colleague: Colleague) => void
   onEmptySelect: () => void
   onHoveredBuildingChange: (buildingId: string | null) => void
   onActiveBuildingCountChange: (count: number) => void
   onPlayerPositionChange: (position: PlayerPosition) => void
+  onColleaguePositionChange: (colleagueId: string, position: PlayerPosition) => void
   onBuildingBoundsChange: (
     buildingId: string,
     bounds: {
@@ -49,12 +53,15 @@ export function AdventureCanvas({
   hoveredBuildingId,
   selectedBuildingId,
   selectedEducationPlaceId,
+  selectedColleagueId,
   onBuildingSelect,
   onEducationSelect,
+  onColleagueSelect,
   onEmptySelect,
   onHoveredBuildingChange,
   onActiveBuildingCountChange,
   onPlayerPositionChange,
+  onColleaguePositionChange,
   onBuildingBoundsChange,
   onEducationBoundsChange,
   touchControlsRef,
@@ -77,12 +84,15 @@ export function AdventureCanvas({
             hoveredBuildingId={hoveredBuildingId}
             selectedBuildingId={selectedBuildingId}
             selectedEducationPlaceId={selectedEducationPlaceId}
+            selectedColleagueId={selectedColleagueId}
             onBuildingSelect={onBuildingSelect}
             onEducationSelect={onEducationSelect}
+            onColleagueSelect={onColleagueSelect}
             onEmptySelect={onEmptySelect}
             onHoveredBuildingChange={onHoveredBuildingChange}
             onActiveBuildingCountChange={onActiveBuildingCountChange}
             onPlayerPositionChange={onPlayerPositionChange}
+            onColleaguePositionChange={onColleaguePositionChange}
             onBuildingBoundsChange={onBuildingBoundsChange}
             onEducationBoundsChange={onEducationBoundsChange}
             touchControlsRef={touchControlsRef}

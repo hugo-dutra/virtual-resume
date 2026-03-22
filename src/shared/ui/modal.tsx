@@ -35,7 +35,7 @@ export function Modal({ isOpen, title, onClose, children }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white/50 p-6 shadow-2xl backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/50"
         onClick={(event) => event.stopPropagation()}
       >
         <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h2>

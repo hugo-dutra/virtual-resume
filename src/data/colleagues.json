@@ -1,0 +1,38 @@
+{
+  "updatedAt": "2026-03-22",
+  "colleagues": [
+    {
+      "id": "marcelo-tobias",
+      "name": "Marcelo Tobias",
+      "linkedinUrl": "https://www.linkedin.com/in/marcelotobias",
+      "content": "Marcelo foi uma referencia tecnica e humana durante momentos-chave da minha evolucao profissional. Trabalhar ao lado dele elevou meu nivel de colaboracao, ownership e visao de produto.",
+      "testimonial": "Marcelo, sua parceria foi essencial para eu evoluir como engenheiro e como pessoa. Obrigado por sempre puxar o time para cima com clareza, generosidade e excelencia.",
+      "zone": "Colleagues Quarter",
+      "picturePath": "/assets/colleagues/pictures/marcelo-tobias.jpg",
+      "movementSpeed": 3.9,
+      "path": [
+        { "x": 44.5, "z": 22.5 },
+        { "x": 50.0, "z": 22.5 },
+        { "x": 50.0, "z": 31.0 },
+        { "x": 45.0, "z": 34.5 },
+        { "x": 41.5, "z": 27.0 }
+      ],
+      "asset": {
+        "animations": {
+          "idle": "colleagues/marcelo-tobias-idle.fbx",
+          "walking": "colleagues/marcelo-tobias-walking.fbx"
+        },
+        "transform": {
+          "scale": { "x": 0.05, "y": 0.05, "z": 0.05 },
+          "offset": { "x": 0, "y": -0.25, "z": 0 },
+          "rotationY": 0
+        }
+      },
+      "interaction": {
+        "stopDistance": 4.4,
+        "minimapIcon": "?",
+        "hitbox": { "x": 1.5, "y": 2.1, "z": 1.5 }
+      }
+    }
+  ]
+}
