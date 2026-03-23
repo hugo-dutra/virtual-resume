@@ -77,7 +77,7 @@ export function AdventureCanvas({
           gl.toneMappingExposure = 1.24
           gl.outputColorSpace = THREE.SRGBColorSpace
         }}
-        shadows
+        shadows={{ type: THREE.PCFShadowMap }}
       >
         <Suspense fallback={null}>
           <AdventureScene
