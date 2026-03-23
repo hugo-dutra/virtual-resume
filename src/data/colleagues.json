@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-22",
+  "updatedAt": "2026-03-23",
   "colleagues": [
     {
       "id": "marcelo-tobias",
@@ -117,6 +117,46 @@
         "stopDistance": 4.4,
         "minimapIcon": "?",
         "minimapBackgroundColor": "#22c55e",
+        "minimapTextColor": "#0f172a",
+        "hitbox": { "x": 1.5, "y": 2.1, "z": 1.5 }
+      }
+    },
+    {
+      "id": "vinicius-orru",
+      "name": "Vinicius Orru",
+      "linkedinUrl": "https://www.linkedin.com/in/vinicius-orru/",
+      "content": "I worked with Vinicius at SEDF. He is an extremely sensible and grounded person. I learned a lot from him, especially about paying attention to software security concerns. He is highly critical in the best possible way: a drop of sanity in an ocean of insanity.",
+      "testimonial": "Vinicius, working with you at SEDF taught me to treat software security as a first-class concern. Your critical thinking, sensibility, and calm mindset were a drop of sanity in an ocean of insanity.",
+      "zone": "Colleagues Quarter",
+      "picturePath": "/assets/colleagues/pictures/vinicius-orru.png",
+      "movementSpeed": 3.5,
+      "path": [
+        { "x": -76.0, "z": -110.0 },
+        { "x": 0.0, "z": -114.0 },
+        { "x": 76.0, "z": -110.0 },
+        { "x": 86.0, "z": -40.0 },
+        { "x": 86.0, "z": 48.0 },
+        { "x": 76.0, "z": 104.0 },
+        { "x": 0.0, "z": 108.0 },
+        { "x": -76.0, "z": 104.0 },
+        { "x": -86.0, "z": 48.0 },
+        { "x": -86.0, "z": -40.0 }
+      ],
+      "asset": {
+        "animations": {
+          "idle": "colleagues/vinicius-orru-idle.fbx",
+          "walking": "colleagues/vinicius-orru-walking.fbx"
+        },
+        "transform": {
+          "scale": { "x": 5, "y": 5, "z": 5 },
+          "offset": { "x": 0, "y": -0.25, "z": 0 },
+          "rotationY": 0
+        }
+      },
+      "interaction": {
+        "stopDistance": 4.4,
+        "minimapIcon": "?",
+        "minimapBackgroundColor": "#f97316",
         "minimapTextColor": "#0f172a",
         "hitbox": { "x": 1.5, "y": 2.1, "z": 1.5 }
       }
